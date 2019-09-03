@@ -85,7 +85,7 @@ namespace eosiosystem {
       });
    }
 
-   int get_producer_number(int activated_share, const std::vector<pair<int, int> >& sorted_producer_points) {
+   int get_producer_amount(int activated_share, const std::vector<pair<int, int> >& sorted_producer_points) {
     for (auto iterator = sorted_producer_points.rbegin(); iterator != sorted_producer_points.rend(); iterator++) {
       if (activated_share >= iterator->first) {
         return iterator->second;
@@ -101,16 +101,19 @@ namespace eosiosystem {
 
       std::vector< std::pair<eosio::producer_key,uint16_t> > top_producers;
       const asset token_supply = eosio::token::get_supply(token_account, core_symbol().code() );
-      int activated_share = 100 * _gstate.total_activated_stake / token_supply.amount;
-      int max_producer_number = get_producer_number(activated_share, {
+      int activated_share = 100 * _gstate.active_stake / token_supply.amount;
+      int max_producer_amount = get_producer_amount(activated_share, {
         {20, 30},
         {40, 60},
         {60, 80},
         {80, 100},
       });
-      top_producers.reserve(max_producer_number);
+      if (max_producer_amount > _gstate.max_producer_amount) {
+        _gstate.max_producer_amount = max_producer_amount;
+      }
+      top_producers.reserve(max_producer_amount);
 
-      for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < max_producer_number && 0 < it->total_votes && it->active(); ++it ) {
+      for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < max_producer_amount && 0 < it->total_votes && it->active(); ++it ) {
          top_producers.emplace_back( std::pair<eosio::producer_key,uint16_t>({{it->owner, it->producer_key}, it->location}) );
       }
 
@@ -240,6 +243,7 @@ namespace eosiosystem {
        */
       if( voter->last_vote_weight <= 0.0 ) {
          _gstate.total_activated_stake += voter->staked;
+         _gstate.active_stake += voter->staked;
          if( _gstate.total_activated_stake >= min_activated_stake && _gstate.thresh_activated_stake_time == time_point() ) {
             _gstate.thresh_activated_stake_time = current_time_point();
          }
