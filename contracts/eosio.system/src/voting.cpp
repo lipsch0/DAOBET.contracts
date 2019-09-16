@@ -85,13 +85,13 @@ namespace eosiosystem {
       });
    }
 
-   int get_producer_amount(int activated_share, const std::vector<pair<int, int> >& sorted_producer_points) {
-    for (auto iterator = sorted_producer_points.rbegin(); iterator != sorted_producer_points.rend(); iterator++) {
-      if (activated_share >= iterator->first) {
-        return iterator->second;
+   int get_target_amount(int activated_share) {
+      if (activated_share <= 33) {
+        return 102;
+      } else if (activated_share > 33 && activated_share < 60) {
+        return 21 + (activated_share - 33) * 3;
       }
-    }
-    return 21;
+      return 102;
    }
 
    void system_contract::update_elected_producers( block_timestamp block_time ) {
@@ -102,23 +102,22 @@ namespace eosiosystem {
       std::vector< std::pair<eosio::producer_key,uint16_t> > top_producers;
       const asset token_supply = eosio::token::get_supply(token_account, core_symbol().code() );
       int activated_share = 100 * _gstate.active_stake / token_supply.amount;
-      int max_producer_amount = get_producer_amount(activated_share, {
-        {20, 30},
-        {40, 60},
-        {60, 80},
-        {80, 100},
-      });
-      if (max_producer_amount > _gstate.max_producer_amount) {
-        _gstate.max_producer_amount = max_producer_amount;
-      }
-      top_producers.reserve(max_producer_amount);
+      int schedule_size = _gstate.last_producer_schedule_size;
 
-      for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < max_producer_amount && 0 < it->total_votes && it->active(); ++it ) {
+      if (block_time.slot - _gstate.last_schedule_size_update.slot >= _gstate.schedule_update_interval) {
+        int target_amount = get_target_amount(activated_share);
+        if (target_amount > schedule_size) {
+          schedule_size = schedule_size + _gstate.schedule_size_step;
+        } else if (target_amount < schedule_size) {
+          schedule_size = schedule_size - _gstate.schedule_size_step;
+        }
+        _gstate.last_schedule_size_update = block_time;
+      }
+
+      top_producers.reserve(schedule_size);
+
+      for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < schedule_size && 0 < it->total_votes && it->active(); ++it ) {
          top_producers.emplace_back( std::pair<eosio::producer_key,uint16_t>({{it->owner, it->producer_key}, it->location}) );
-      }
-
-      if ( top_producers.size() < _gstate.last_producer_schedule_size ) {
-         return;
       }
 
       /// sort by producer name

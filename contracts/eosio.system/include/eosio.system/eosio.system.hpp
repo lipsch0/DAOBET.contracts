@@ -99,14 +99,17 @@ namespace eosiosystem {
       uint16_t             last_producer_schedule_size = 0;
       double               total_producer_vote_weight = 0; /// the sum of all producer votes
       block_timestamp      last_name_close;
-      uint16_t             max_producer_amount = 0;
+      block_timestamp      last_schedule_size_update;
+      uint32_t             schedule_update_interval = 60 * 60 * 24;
+      uint16_t             schedule_size_step = 3;
 
       // explicit serialization macro is not necessary, used here only to improve compilation time
       EOSLIB_SERIALIZE_DERIVED( eosio_global_state, eosio::blockchain_parameters,
                                 (max_ram_size)(total_ram_bytes_reserved)(total_ram_stake)
                                 (last_producer_schedule_update)(last_pervote_bucket_fill)
                                 (pervote_bucket)(perblock_bucket)(total_unpaid_blocks)(total_activated_stake)(active_stake)(thresh_activated_stake_time)
-                                (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)(max_producer_amount) )
+                                (last_producer_schedule_size)(total_producer_vote_weight)(last_name_close)
+                                (last_schedule_size_update)(schedule_update_interval)(schedule_size_step))
    };
 
    /**
