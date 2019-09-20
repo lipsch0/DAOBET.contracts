@@ -107,7 +107,7 @@ namespace eosiosystem {
       const auto usecs_since_last_fill = (ct - _gstate.last_pervote_bucket_fill).count();
 
       if( usecs_since_last_fill > 0 && _gstate.last_pervote_bucket_fill > time_point() ) {
-         double emission_rate = get_target_emission_per_year(1.0 * _gstate.total_activated_stake / token_supply.amount);
+         double emission_rate = get_target_emission_per_year(1.0 * _gstate.active_stake / token_supply.amount);
          double continuous_rate = get_continuous_rate(emission_rate);
          auto new_tokens = static_cast<int64_t>(continuous_rate * token_supply.amount * usecs_since_last_fill / useconds_per_year);
          auto to_dao     = new_tokens / 5;
