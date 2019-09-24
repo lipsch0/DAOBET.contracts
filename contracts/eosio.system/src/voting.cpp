@@ -104,7 +104,7 @@ namespace eosiosystem {
       int activated_share = 100 * _gstate.active_stake / token_supply.amount;
       int schedule_size = _gstate.last_producer_schedule_size;
 
-      if (block_time.slot - _gstate.last_schedule_size_update.slot >= _gstate.schedule_update_interval) {
+      if (block_time.slot - _gstate.last_schedule_size_update.slot >= 2 * _gstate.schedule_update_interval) {
         int target_amount = get_target_amount(activated_share);
         if (target_amount > schedule_size) {
           schedule_size = schedule_size + _gstate.schedule_size_step;
