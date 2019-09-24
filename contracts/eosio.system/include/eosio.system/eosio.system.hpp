@@ -96,7 +96,7 @@ namespace eosiosystem {
       int64_t              total_activated_stake = 0;
       int64_t              active_stake = 0;
       time_point           thresh_activated_stake_time;
-      uint16_t             last_producer_schedule_size = 0;
+      uint16_t             last_producer_schedule_size = 21;
       double               total_producer_vote_weight = 0; /// the sum of all producer votes
       block_timestamp      last_name_close;
       block_timestamp      last_schedule_size_update;
