@@ -117,9 +117,20 @@ namespace eosiosystem {
       top_producers.reserve(schedule_size);
 
       for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < schedule_size && 0 < it->total_votes && it->active(); ++it ) {
-         top_producers.emplace_back( std::pair<eosio::producer_key,uint16_t>({{it->owner, it->producer_key}, it->location}) );
+         del_bandwidth_table del_tbl( _self, it->owner.value );
+         auto itr = del_tbl.find( it->owner.value );
+         if (itr == del_tbl.end()) {
+            continue;
+         }
+         auto total_staked = itr->net_weight + itr->cpu_weight + itr->vote_weight;
+         if (total_staked.amount >= 0.001 * token_supply.amount) {
+            top_producers.emplace_back( std::pair<eosio::producer_key,uint16_t>({{it->owner, it->producer_key}, it->location}) );
+         }
       }
 
+      if (top_producers.empty()) {
+         return;
+      }
       /// sort by producer name
       std::sort( top_producers.begin(), top_producers.end() );
 
