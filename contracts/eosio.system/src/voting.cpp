@@ -87,7 +87,7 @@ namespace eosiosystem {
 
    int get_target_amount(int activated_share) {
       if (activated_share <= 33) {
-        return 102;
+        return 21;
       } else if (activated_share > 33 && activated_share < 60) {
         return 21 + (activated_share - 33) * 3;
       }
