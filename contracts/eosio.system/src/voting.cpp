@@ -102,21 +102,22 @@ namespace eosiosystem {
       std::vector< std::pair<eosio::producer_key,uint16_t> > top_producers;
       const asset token_supply = eosio::token::get_supply(token_account, core_symbol().code() );
       int activated_share = 100 * _gstate.active_stake / token_supply.amount;
-      int schedule_size = _gstate.last_producer_schedule_size;
+      int target_schedule_size = _gstate.target_producer_schedule_size;
 
-      if (block_time.slot - _gstate.last_schedule_size_update.slot >= 2 * _gstate.schedule_update_interval) {
+      if (block_time.slot - _gstate.last_target_schedule_size_update.slot >= 2 * _gstate.schedule_update_interval) {
         int target_amount = get_target_amount(activated_share);
-        if (target_amount > schedule_size) {
-          schedule_size = schedule_size + _gstate.schedule_size_step;
-        } else if (target_amount < schedule_size) {
-          schedule_size = schedule_size - _gstate.schedule_size_step;
+        if (target_amount > target_schedule_size) {
+          target_schedule_size = target_schedule_size + _gstate.schedule_size_step;
+        } else if (target_amount < target_schedule_size) {
+          target_schedule_size = target_schedule_size - _gstate.schedule_size_step;
         }
-        _gstate.last_schedule_size_update = block_time;
+        _gstate.last_target_schedule_size_update = block_time;
+        _gstate.target_producer_schedule_size = target_schedule_size;
       }
 
-      top_producers.reserve(schedule_size);
+      top_producers.reserve(target_schedule_size);
 
-      for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < schedule_size && 0 < it->total_votes && it->active(); ++it ) {
+      for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < target_schedule_size && 0 < it->total_votes && it->active(); ++it ) {
          del_bandwidth_table del_tbl( _self, it->owner.value );
          auto itr = del_tbl.find( it->owner.value );
          if (itr == del_tbl.end()) {
