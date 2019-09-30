@@ -114,6 +114,10 @@ namespace eosiosystem {
         _gstate.last_schedule_size_update = block_time;
       }
 
+      if (schedule_size < 21) {
+        schedule_size = 21;
+      }
+
       top_producers.reserve(schedule_size);
 
       for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < schedule_size && 0 < it->total_votes && it->active(); ++it ) {
