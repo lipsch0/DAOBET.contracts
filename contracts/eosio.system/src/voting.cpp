@@ -106,6 +106,7 @@ namespace eosiosystem {
 
       if (block_time.slot - _gstate.last_schedule_size_update.slot >= 2 * _gstate.schedule_update_interval) {
         int target_amount = get_target_amount(activated_share);
+        schedule_size = (schedule_size / 3) * 3; //find schedule_size div to 3
         if (target_amount > schedule_size) {
           schedule_size = schedule_size + _gstate.schedule_size_step;
         } else if (target_amount < schedule_size) {
