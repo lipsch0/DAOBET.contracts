@@ -136,6 +136,13 @@ namespace eosiosystem {
       EOSLIB_SERIALIZE( eosio_global_state3, (last_vpay_state_update)(total_vpay_share_change_rate) )
    };
 
+   struct [[eosio::table("global4"), eosio::contract("eosio.system")]] eosio_global_state4 {
+      eosio_global_state4() { }
+      uint16_t          last_producer_schedule_target_size = 21;
+
+      EOSLIB_SERIALIZE( eosio_global_state4, (last_producer_schedule_target_size) )
+   };
+
    struct [[eosio::table, eosio::contract("eosio.system")]] producer_info {
       name                  owner;
       double                total_votes = 0;
@@ -215,6 +222,7 @@ namespace eosiosystem {
    typedef eosio::singleton< "global"_n, eosio_global_state >   global_state_singleton;
    typedef eosio::singleton< "global2"_n, eosio_global_state2 > global_state2_singleton;
    typedef eosio::singleton< "global3"_n, eosio_global_state3 > global_state3_singleton;
+   typedef eosio::singleton< "global4"_n, eosio_global_state4 > global_state4_singleton;
 
    static constexpr uint32_t     seconds_per_day = 24 * 3600;
 
@@ -313,9 +321,11 @@ namespace eosiosystem {
          global_state_singleton  _global;
          global_state2_singleton _global2;
          global_state3_singleton _global3;
+         global_state4_singleton _global4;
          eosio_global_state      _gstate;
          eosio_global_state2     _gstate2;
          eosio_global_state3     _gstate3;
+         eosio_global_state4     _gstate4;
          rammarket               _rammarket;
          rex_pool_table          _rexpool;
          rex_fund_table          _rexfunds;

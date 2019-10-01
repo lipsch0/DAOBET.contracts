@@ -102,21 +102,17 @@ namespace eosiosystem {
       std::vector< std::pair<eosio::producer_key,uint16_t> > top_producers;
       const asset token_supply = eosio::token::get_supply(token_account, core_symbol().code() );
       int activated_share = 100 * _gstate.active_stake / token_supply.amount;
-      int schedule_size = _gstate.last_producer_schedule_size;
+      int schedule_size = _gstate4.last_producer_schedule_target_size;
 
       if (block_time.slot - _gstate.last_schedule_size_update.slot >= 2 * _gstate.schedule_update_interval) {
         int target_amount = get_target_amount(activated_share);
-        schedule_size = (schedule_size / 3) * 3; //find schedule_size div to 3
         if (target_amount > schedule_size) {
           schedule_size = schedule_size + _gstate.schedule_size_step;
         } else if (target_amount < schedule_size) {
           schedule_size = schedule_size - _gstate.schedule_size_step;
         }
         _gstate.last_schedule_size_update = block_time;
-      }
-
-      if (schedule_size < 21) {
-        schedule_size = 21;
+        _gstate4.last_producer_schedule_target_size = target_amount;
       }
 
       top_producers.reserve(schedule_size);
