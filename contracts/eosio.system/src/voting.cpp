@@ -112,7 +112,7 @@ namespace eosiosystem {
           schedule_size = schedule_size - _gstate.schedule_size_step;
         }
         _gstate.last_schedule_size_update = block_time;
-        _gstate4.last_producer_schedule_target_size = target_amount;
+        _gstate4.last_producer_schedule_target_size = schedule_size;
       }
 
       top_producers.reserve(schedule_size);
