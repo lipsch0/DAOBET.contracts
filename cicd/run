@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -e
+
+JOB=$1
+
+# build
+function build(){
+  docker run \
+    --rm \
+    -v `pwd`:/haya/contracts \
+    -w /haya/contracts \
+    -ti mixbytes/haya:devel-patched-cdt \
+    ./cicd/build.sh
+}
+
+# pack
+function pack(){
+  docker run \
+    --rm \
+    -v `pwd`:/haya/contracts \
+    -w /haya/contracts \
+    -ti mixbytes/haya:devel-patched-cdt \
+    ./cicd/pack.sh
+}
+
+# login
+function login(){
+  docker run \
+    --rm \
+    -v `pwd`:/haya/contracts \
+    -w /haya/contracts \
+    -ti mixbytes/haya:devel-patched-cdt \
+    bash
+}
+
+function test(){
+# test
+  docker run \
+    --rm \
+    -v `pwd`:/haya/contracts \
+    -w /haya/contracts \
+    -ti mixbytes/haya:devel-patched-cdt \
+    /haya/contracts/build/tests/unit_test
+}
+
+$JOB

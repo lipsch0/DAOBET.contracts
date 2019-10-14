@@ -1,10 +1,51 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(eosio_contracts)
+set(PROJECT "eosio_contracts")
 
-set(VERSION_MAJOR 1)
-set(VERSION_MINOR 6)
-set(VERSION_PATCH 0)
+project(${PROJECT})
+
+# Check equal CMAKE_SOURCE_DIR and CMAKE_BINARY_DIR
+if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+  set(dir "build")
+  set(cmd "cmake")
+  if (target)
+    set(dir "${dir}/${target}")
+    set(cmd "${cmd} -Dtarget=${target}")
+  elseif(CMAKE_BUILD_TYPE)
+    set(dir "${dir}/${CMAKE_BUILD_TYPE}")
+    set(cmd "${cmd} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+  else()
+    set(dir "${dir}/default")
+  endif()
+  set(cmd "${cmd} ${CMAKE_SOURCE_DIR}")
+
+  message(FATAL_ERROR "Builds are not allowed in ${CMAKE_SOURCE_DIR}.\n"
+    "Instead:\n"
+    "1) Remove the CMakeCache.txt file and CMakeFiles directory "
+   "from ${CMAKE_SOURCE_DIR}.\n"
+    "2) Create a directory to hold your build files, for example: ${dir}.\n"
+    "3) Change to that directory.\n"
+    "4) Run cmake targetting ${CMAKE_SOURCE_DIR}, for example: ${cmd}")
+endif()
+
+execute_process(COMMAND git describe --tags
+	OUTPUT_VARIABLE GIT_TAG_RAW
+                ERROR_QUIET)
+string(STRIP ${GIT_TAG_RAW} GIT_TAG)
+string(REGEX REPLACE "^v" "" SEMVER_TMP_1 ${GIT_TAG})
+string(REPLACE "." ";" SEMVER_TMP_LIST ${SEMVER_TMP_1})
+list(GET SEMVER_TMP_LIST 0 SEMVER_MAJOR) # SEMVER_MAJOR.X.X
+list(GET SEMVER_TMP_LIST 1 SEMVER_MINOR) # SEMVER_MAJOR.SEMVER_MINOR.X
+list(GET SEMVER_TMP_LIST 2 SEMVER_TMP_PATCH)
+string(REPLACE "-" ";" SEMVER_TMP_PATCH_LIST ${SEMVER_TMP_PATCH})
+list(GET SEMVER_TMP_PATCH_LIST 0 SEMVER_PATCH) # SEMVER_MAJOR.SEMVER_MINOR.SEMVER_PATCH
+set(SEMVER_FULL "${SEMVER_MAJOR}.${SEMVER_MINOR}.${SEMVER_PATCH}")
+
+message(STATUS "${PROJECT} version: ${SEMVER_FULL} (semver), ${GIT_TAG} (git)")
+
+set(VERSION_MAJOR ${VER_MAJOR})
+set(VERSION_MINOR ${VER_MINOR})
+set(VERSION_PATCH ${VER_PATCH})
 #set(VERSION_SUFFIX rc3)
 
 if (VERSION_SUFFIX)
@@ -84,3 +125,10 @@ ExternalProject_Add(
   TEST_COMMAND   ""
   INSTALL_COMMAND ""
 )
+add_dependencies(contracts_unit_tests contracts_project)
+
+add_custom_target(create_tar COMMAND
+  mkdir -p assets &&
+	tar -C ${CMAKE_BINARY_DIR} -cvz --exclude='include' --exclude='*.cmake' --exclude='Makefile' --exclude='CMake*' -f "assets/contracts-${GIT_TAG}.tar.gz" "contracts" --transform='s/contracts/contracts-${GIT_TAG}/g'
+	)
+add_dependencies(create_tar contracts_unit_tests)
