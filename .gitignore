@@ -1,3 +1,9 @@
+# General
+*.sw[op]
+.DS_Store
+/.idea/
+/tags
+
 # Prerequisites
 *.d
 
@@ -31,6 +37,6 @@
 *.out
 *.app
 
-build/*
-.DS_Store
-.idea
+
+# Project-specific
+/build/
