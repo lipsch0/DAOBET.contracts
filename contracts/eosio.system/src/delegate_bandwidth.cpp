@@ -238,17 +238,13 @@ namespace eosiosystem {
    {
       require_auth( from );
       check( stake_net_delta.amount != 0 || stake_cpu_delta.amount != 0 || stake_vote_delta.amount != 0, "should stake non-zero amount" );
-      auto get_asset_sign = [](const asset& delta) {
-         if (delta.amount > 0) {
-            return 1;
-         } else if (delta.amount == 0) {
-            return 0;
-         }
-         return -1;
+      auto check_asset_sign = [](const asset& fst, const asset& snd) {
+         return std::abs( (fst + snd).amount ) >= std::max( std::abs( fst.amount ), std::abs( snd.amount ) );
       };
 
-      check( get_asset_sign(stake_net_delta) == get_asset_sign(stake_cpu_delta) && get_asset_sign(stake_cpu_delta) == get_asset_sign(stake_vote_delta),
-         "net, cpu and vote deltas should have same signs");
+      check(check_asset_sign(stake_net_delta, stake_cpu_delta) && 
+            check_asset_sign(stake_cpu_delta, stake_vote_delta) &&
+            check_asset_sign(stake_net_delta, stake_vote_delta), "net, cpu and vote deltas should not have opposite signs");
 
       name source_stake_from = from;
       if ( transfer ) {
