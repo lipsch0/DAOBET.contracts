@@ -40,7 +40,9 @@ public:
    }
 
    transaction_trace_ptr create_account_with_resources( account_name a, account_name creator, asset ramfunds, bool multisig,
-                                                        asset net = core_sym::from_string("10.0000"), asset cpu = core_sym::from_string("10.0000") ) {
+                                                        asset net = core_sym::from_string("10.0000"),
+                                                        asset cpu = core_sym::from_string("10.0000"),
+                                                        asset vote = core_sym::from_string("10.0000") ) {
       signed_transaction trx;
       set_transaction_headers(trx);
 
@@ -73,6 +75,7 @@ public:
                                             ("receiver", a)
                                             ("stake_net_quantity", net )
                                             ("stake_cpu_quantity", cpu )
+                                            ("stake_vote_quantity", vote)
                                             ("transfer", 0 )
                                           )
                                 );
@@ -149,6 +152,8 @@ public:
 
    abi_serializer abi_ser;
 };
+
+//---------- tests ----------//
 
 transaction eosio_msig_tester::reqauth( account_name from, const vector<permission_level>& auths, const fc::microseconds& max_serialization_time ) {
    fc::variants v;

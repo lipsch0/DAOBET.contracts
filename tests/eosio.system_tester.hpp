@@ -155,6 +155,7 @@ public:
                                             ("receiver", a)
                                             ("stake_net_quantity", core_sym::from_string("10.0000") )
                                             ("stake_cpu_quantity", core_sym::from_string("10.0000") )
+                                            ("stake_vote_quantity", core_sym::from_string("10.0000"))
                                             ("transfer", 0 )
                                           )
                                 );
@@ -165,7 +166,9 @@ public:
    }
 
    transaction_trace_ptr create_account_with_resources( account_name a, account_name creator, asset ramfunds, bool multisig,
-                                                        asset net = core_sym::from_string("10.0000"), asset cpu = core_sym::from_string("10.0000") ) {
+                                                        asset net = core_sym::from_string("10.0000"),
+                                                        asset cpu = core_sym::from_string("10.0000"),
+                                                        asset vote = core_sym::from_string("10.0000") ) {
       signed_transaction trx;
       set_transaction_headers(trx);
 
@@ -198,6 +201,7 @@ public:
                                             ("receiver", a)
                                             ("stake_net_quantity", net )
                                             ("stake_cpu_quantity", cpu )
+                                            ("stake_vote_quantity", vote)
                                             ("transfer", 0 )
                                           )
                                 );
@@ -210,7 +214,8 @@ public:
    transaction_trace_ptr setup_producer_accounts( const std::vector<account_name>& accounts,
                                                   asset ram = core_sym::from_string("1.0000"),
                                                   asset cpu = core_sym::from_string("80.0000"),
-                                                  asset net = core_sym::from_string("80.0000")
+                                                  asset net = core_sym::from_string("80.0000"),
+                                                  asset vote = core_sym::from_string("10.0000")
                                                 )
    {
       account_name creator(config::system_account_name);
@@ -239,8 +244,9 @@ public:
                                                ("from", creator)
                                                ("receiver", a)
                                                ("stake_net_quantity", net)
-                                               ("stake_cpu_quantity", cpu )
-                                               ("transfer", 0 )
+                                               ("stake_cpu_quantity", cpu)
+                                               ("stake_vote_quantity", vote)
+                                               ("transfer", 0)
                                                )
                                    );
       }
@@ -272,12 +278,14 @@ public:
          return base_tester::push_action( std::move(act), auth ? uint64_t(signer) : signer == N(bob111111111) ? N(alice1111111) : N(bob111111111) );
    }
 
-   action_result stake( const account_name& from, const account_name& to, const asset& net, const asset& cpu ) {
+   action_result stake( const account_name& from, const account_name& to, const asset& net, const asset& cpu,
+                        const asset& vote = core_sym::from_string("10.0000") ) {
       return push_action( name(from), N(delegatebw), mvo()
                           ("from",     from)
                           ("receiver", to)
                           ("stake_net_quantity", net)
                           ("stake_cpu_quantity", cpu)
+                          ("stake_vote_quantity", vote)
                           ("transfer", 0 )
       );
    }
@@ -286,12 +294,14 @@ public:
       return stake( acnt, acnt, net, cpu );
    }
 
-   action_result stake_with_transfer( const account_name& from, const account_name& to, const asset& net, const asset& cpu ) {
+   action_result stake_with_transfer( const account_name& from, const account_name& to, const asset& net, const asset& cpu,
+                                      const asset& vote = core_sym::from_string("10.0000") ) {
       return push_action( name(from), N(delegatebw), mvo()
                           ("from",     from)
                           ("receiver", to)
                           ("stake_net_quantity", net)
                           ("stake_cpu_quantity", cpu)
+                          ("stake_vote_quantity", vote)
                           ("transfer", true )
       );
    }
@@ -300,12 +310,14 @@ public:
       return stake_with_transfer( acnt, acnt, net, cpu );
    }
 
-   action_result unstake( const account_name& from, const account_name& to, const asset& net, const asset& cpu ) {
+   action_result unstake( const account_name& from, const account_name& to, const asset& net, const asset& cpu,
+                          const asset& vote = core_sym::from_string("0.0000") ) {
       return push_action( name(from), N(undelegatebw), mvo()
                           ("from",     from)
                           ("receiver", to)
                           ("unstake_net_quantity", net)
                           ("unstake_cpu_quantity", cpu)
+                          ("unstake_vote_quantity", vote)
       );
    }
 
@@ -916,6 +928,7 @@ public:
                                                ("receiver", "producer1111")
                                                ("stake_net_quantity", core_sym::from_string("25090624.0000") )
                                                ("stake_cpu_quantity", core_sym::from_string("0.0000") )
+                                               ("stake_vote_quantity", core_sym::from_string("0.0000"))
                                                ("transfer", 1 )
                                              )
                                  );
@@ -934,6 +947,7 @@ public:
                                                ("receiver", "producer1111")
                                                ("unstake_net_quantity", core_sym::from_string("25090624.0000") )
                                                ("unstake_cpu_quantity", core_sym::from_string("0.0000") )
+                                               ("unstake_vote_quantity", core_sym::from_string("0.0000"))
                                              )
                                  );
 
