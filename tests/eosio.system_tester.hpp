@@ -20,12 +20,16 @@ using namespace fc;
 using mvo = fc::mutable_variant_object;
 
 #ifndef TESTER
-#ifdef NON_VALIDATING_TEST
-#define TESTER tester
-#else
-#define TESTER validating_tester
+# ifdef NON_VALIDATING_TEST
+#  define TESTER tester
+# else
+#  define TESTER validating_tester
+# endif
 #endif
-#endif
+
+
+// just sugar
+#define STRSYM(str) core_sym::from_string(str)
 
 
 namespace eosio_system {
@@ -81,11 +85,11 @@ public:
       produce_blocks();
 
       // Assumes previous setup steps were done with core token symbol set to CORE_SYM
-      create_account_with_resources( N(alice1111111), config::system_account_name, core_sym::from_string("1.0000"), false );
-      create_account_with_resources( N(bob111111111), config::system_account_name, core_sym::from_string("0.4500"), false );
-      create_account_with_resources( N(carol1111111), config::system_account_name, core_sym::from_string("1.0000"), false );
+      create_account_with_resources( N(alice1111111), config::system_account_name, STRSYM("1.0000"), false );
+      create_account_with_resources( N(bob111111111), config::system_account_name, STRSYM("0.4500"), false );
+      create_account_with_resources( N(carol1111111), config::system_account_name, STRSYM("1.0000"), false );
 
-      BOOST_REQUIRE_EQUAL( core_sym::from_string("167270821.0000"), get_balance("eosio")  + get_balance("eosio.ramfee") + get_balance("eosio.stake") + get_balance("eosio.ram") );
+      BOOST_REQUIRE_EQUAL( STRSYM("167270821.0000"), get_balance("eosio")  + get_balance("eosio.ramfee") + get_balance("eosio.stake") + get_balance("eosio.ram") );
    }
 
    enum class setup_level {
@@ -122,7 +126,7 @@ public:
    }
 
 
-   void create_accounts_with_resources( vector<account_name> accounts, account_name creator = config::system_account_name ) {
+   void create_accounts_with_resources( const vector<account_name>& accounts, account_name creator = config::system_account_name ) {
       for( auto a : accounts ) {
          create_account_with_resources( a, creator );
       }
@@ -153,9 +157,9 @@ public:
                                             mvo()
                                             ("from", creator)
                                             ("receiver", a)
-                                            ("stake_net_quantity", core_sym::from_string("10.0000") )
-                                            ("stake_cpu_quantity", core_sym::from_string("10.0000") )
-                                            ("stake_vote_quantity", core_sym::from_string("10.0000"))
+                                            ("stake_net_quantity", STRSYM("10.0000") )
+                                            ("stake_cpu_quantity", STRSYM("10.0000") )
+                                            ("stake_vote_quantity", STRSYM("10.0000"))
                                             ("transfer", 0 )
                                           )
                                 );
@@ -166,9 +170,9 @@ public:
    }
 
    transaction_trace_ptr create_account_with_resources( account_name a, account_name creator, asset ramfunds, bool multisig,
-                                                        asset net = core_sym::from_string("10.0000"),
-                                                        asset cpu = core_sym::from_string("10.0000"),
-                                                        asset vote = core_sym::from_string("10.0000") ) {
+                                                        asset net = STRSYM("10.0000"),
+                                                        asset cpu = STRSYM("10.0000"),
+                                                        asset vote = STRSYM("10.0000") ) {
       signed_transaction trx;
       set_transaction_headers(trx);
 
@@ -212,10 +216,10 @@ public:
    }
 
    transaction_trace_ptr setup_producer_accounts( const std::vector<account_name>& accounts,
-                                                  asset ram = core_sym::from_string("1.0000"),
-                                                  asset cpu = core_sym::from_string("80.0000"),
-                                                  asset net = core_sym::from_string("80.0000"),
-                                                  asset vote = core_sym::from_string("10.0000")
+                                                  asset ram = STRSYM("1.0000"),
+                                                  asset cpu = STRSYM("80.0000"),
+                                                  asset net = STRSYM("80.0000"),
+                                                  asset vote = STRSYM("10.0000")
                                                 )
    {
       account_name creator(config::system_account_name);
@@ -257,14 +261,22 @@ public:
    }
 
    action_result buyram( const account_name& payer, account_name receiver, const asset& eosin ) {
-      return push_action( payer, N(buyram), mvo()( "payer",payer)("receiver",receiver)("quant",eosin) );
+      return push_action( payer, N(buyram), mvo()
+                          ("payer", payer)
+                          ("receiver", receiver)
+                          ("quant", eosin) );
    }
    action_result buyrambytes( const account_name& payer, account_name receiver, uint32_t numbytes ) {
-      return push_action( payer, N(buyrambytes), mvo()( "payer",payer)("receiver",receiver)("bytes",numbytes) );
+      return push_action( payer, N(buyrambytes), mvo()
+                          ("payer", payer)
+                          ("receiver", receiver)
+                          ("bytes", numbytes) );
    }
 
    action_result sellram( const account_name& account, uint64_t numbytes ) {
-      return push_action( account, N(sellram), mvo()( "account", account)("bytes",numbytes) );
+      return push_action( account, N(sellram), mvo()
+                          ("account", account)
+                          ("bytes", numbytes) );
    }
 
    action_result push_action( const account_name& signer, const action_name &name, const variant_object &data, bool auth = true ) {
@@ -278,8 +290,7 @@ public:
          return base_tester::push_action( std::move(act), auth ? uint64_t(signer) : signer == N(bob111111111) ? N(alice1111111) : N(bob111111111) );
    }
 
-   action_result stake( const account_name& from, const account_name& to, const asset& net, const asset& cpu,
-                        const asset& vote = core_sym::from_string("10.0000") ) {
+   action_result stake( const account_name& from, const account_name& to, const asset& net, const asset& cpu, const asset& vote ) {
       return push_action( name(from), N(delegatebw), mvo()
                           ("from",     from)
                           ("receiver", to)
@@ -290,12 +301,11 @@ public:
       );
    }
 
-   action_result stake( const account_name& acnt, const asset& net, const asset& cpu ) {
-      return stake( acnt, acnt, net, cpu );
+   action_result stake( const account_name& acnt, const asset& net, const asset& cpu, const asset& vote ) {
+      return stake( acnt, acnt, net, cpu, vote );
    }
 
-   action_result stake_with_transfer( const account_name& from, const account_name& to, const asset& net, const asset& cpu,
-                                      const asset& vote = core_sym::from_string("10.0000") ) {
+   action_result stake_with_transfer( const account_name& from, const account_name& to, const asset& net, const asset& cpu, const asset& vote ) {
       return push_action( name(from), N(delegatebw), mvo()
                           ("from",     from)
                           ("receiver", to)
@@ -306,12 +316,7 @@ public:
       );
    }
 
-   action_result stake_with_transfer( const account_name& acnt, const asset& net, const asset& cpu ) {
-      return stake_with_transfer( acnt, acnt, net, cpu );
-   }
-
-   action_result unstake( const account_name& from, const account_name& to, const asset& net, const asset& cpu,
-                          const asset& vote = core_sym::from_string("0.0000") ) {
+   action_result unstake( const account_name& from, const account_name& to, const asset& net, const asset& cpu, const asset& vote ) {
       return push_action( name(from), N(undelegatebw), mvo()
                           ("from",     from)
                           ("receiver", to)
@@ -321,8 +326,8 @@ public:
       );
    }
 
-   action_result unstake( const account_name& acnt, const asset& net, const asset& cpu ) {
-      return unstake( acnt, acnt, net, cpu );
+   action_result unstake( const account_name& acnt, const asset& net, const asset& cpu, const asset& vote ) {
+      return unstake( acnt, acnt, net, cpu, vote );
    }
 
    int64_t bancor_convert( int64_t S, int64_t R, int64_t T ) { return double(R) * T  / ( double(S) + T ); };
@@ -449,7 +454,7 @@ public:
       return push_action( name(owner), N(cnclrexorder), mvo()("owner", owner) );
    }
 
-   action_result rentcpu( const account_name& from, const account_name& receiver, const asset& payment, const asset& fund = core_sym::from_string("0.0000") ) {
+   action_result rentcpu( const account_name& from, const account_name& receiver, const asset& payment, const asset& fund = STRSYM("0.0000") ) {
       return push_action( name(from), N(rentcpu), mvo()
                           ("from",         from)
                           ("receiver",     receiver)
@@ -458,7 +463,7 @@ public:
       );
    }
 
-   action_result rentnet( const account_name& from, const account_name& receiver, const asset& payment, const asset& fund = core_sym::from_string("0.0000") ) {
+   action_result rentnet( const account_name& from, const account_name& receiver, const asset& payment, const asset& fund = STRSYM("0.0000") ) {
       return push_action( name(from), N(rentnet), mvo()
                           ("from",         from)
                           ("receiver",     receiver)
@@ -473,10 +478,10 @@ public:
                                              ("from",         from)
                                              ("receiver",     receiver)
                                              ("loan_payment", payment)
-                                             ("loan_fund",    core_sym::from_string("0.0000") )
+                                             ("loan_fund",    STRSYM("0.0000") )
       );
 
-      asset rented_tokens = core_sym::from_string("0.0000");
+      asset rented_tokens = STRSYM("0.0000");
       for ( size_t i = 0; i < trace->action_traces.size(); ++i ) {
          for ( size_t j = 0; j < trace->action_traces[i].inline_traces.size(); ++j ) {
             if ( trace->action_traces[i].inline_traces[j].act.name == N(rentresult) ) {
@@ -630,7 +635,7 @@ public:
 
    asset get_rex_vote_stake( const account_name& act ) const {
       vector<char> data = get_row_by_account( config::system_account_name, config::system_account_name, N(rexbal), act );
-      return data.empty() ? core_sym::from_string("0.0000") : abi_ser.binary_to_variant("rex_balance", data, abi_serializer_max_time)["vote_stake"].as<asset>();
+      return data.empty() ? STRSYM("0.0000") : abi_ser.binary_to_variant("rex_balance", data, abi_serializer_max_time)["vote_stake"].as<asset>();
    }
 
    fc::variant get_rex_order( const account_name& act ) {
@@ -666,17 +671,18 @@ public:
 
    void setup_rex_accounts( const std::vector<account_name>& accounts,
                             const asset& init_balance,
-                            const asset& net = core_sym::from_string("80.0000"),
-                            const asset& cpu = core_sym::from_string("80.0000"),
+                            const asset& net = STRSYM("80.0000"),
+                            const asset& cpu = STRSYM("80.0000"),
                             bool deposit_into_rex_fund = true ) {
-      const asset nstake = core_sym::from_string("10.0000");
-      const asset cstake = core_sym::from_string("10.0000");
-      create_account_with_resources( N(proxyaccount), config::system_account_name, core_sym::from_string("1.0000"), false, net, cpu );
+      const asset nstake = STRSYM("10.0000");
+      const asset cstake = STRSYM("10.0000");
+      const asset vstake = cstake;
+      create_account_with_resources( N(proxyaccount), config::system_account_name, STRSYM("1.0000"), false, net, cpu );
       BOOST_REQUIRE_EQUAL( success(), push_action( N(proxyaccount), N(regproxy), mvo()("proxy", "proxyaccount")("isproxy", true) ) );
       for (const auto& a: accounts) {
-         create_account_with_resources( a, config::system_account_name, core_sym::from_string("1.0000"), false, net, cpu );
+         create_account_with_resources( a, config::system_account_name, STRSYM("1.0000"), false, net, cpu );
          transfer( config::system_account_name, a, init_balance + nstake + cstake, config::system_account_name );
-         BOOST_REQUIRE_EQUAL( success(),                        stake( a, a, nstake, cstake) );
+         BOOST_REQUIRE_EQUAL( success(),                        stake( a, a, nstake, cstake, vstake) );
          BOOST_REQUIRE_EQUAL( success(),                        vote( a, { }, N(proxyaccount) ) );
          BOOST_REQUIRE_EQUAL( init_balance,                     get_balance(a) );
          BOOST_REQUIRE_EQUAL( asset::from_string("0.0000 REX"), get_rex_balance(a) );
@@ -796,7 +802,7 @@ public:
    }
 
    double stake2votes( const string& s ) {
-      return stake2votes( core_sym::from_string(s) );
+      return stake2votes( STRSYM(s) );
    }
 
    fc::variant get_stats( const string& symbolname ) {
@@ -839,7 +845,7 @@ public:
       abi_serializer msig_abi_ser;
       {
          create_account_with_resources( N(eosio.msig), config::system_account_name );
-         BOOST_REQUIRE_EQUAL( success(), buyram( "eosio", "eosio.msig", core_sym::from_string("5000.0000") ) );
+         BOOST_REQUIRE_EQUAL( success(), buyram( "eosio", "eosio.msig", STRSYM("5000.0000") ) );
          produce_block();
 
          auto trace = base_tester::push_action(config::system_account_name, N(setpriv),
@@ -862,8 +868,8 @@ public:
 
    vector<name> active_and_vote_producers() {
       //stake more than 15% of total EOS supply to activate chain
-      transfer( "eosio", "alice1111111", core_sym::from_string("75090624.0000"), "eosio" );
-      BOOST_REQUIRE_EQUAL( success(), stake( "alice1111111", "alice1111111", core_sym::from_string("25090624.0000"), core_sym::from_string("25090624.0000") ) );
+      transfer( "eosio", "alice1111111", STRSYM("75090624.0000"), "eosio" );
+      BOOST_REQUIRE_EQUAL( success(), stake( "alice1111111", STRSYM("25090624.0000"), STRSYM("25090624.0000"), STRSYM("25090624.0000") ) );
 
       // create accounts {defproducera, defproducerb, ..., defproducerz} and register as producers
       std::vector<account_name> producer_names;
@@ -895,9 +901,9 @@ public:
 
       //vote for producers
       {
-         transfer( config::system_account_name, "alice1111111", core_sym::from_string("10000000.0000"), config::system_account_name );
-         BOOST_REQUIRE_EQUAL(success(), stake( "alice1111111", core_sym::from_string("3000000.0000"), core_sym::from_string("3000000.0000") ) );
-         BOOST_REQUIRE_EQUAL(success(), buyram( "alice1111111", "alice1111111", core_sym::from_string("3000000.0000") ) );
+         transfer( config::system_account_name, "alice1111111", STRSYM("10000000.0000"), config::system_account_name );
+         BOOST_REQUIRE_EQUAL(success(), stake( "alice1111111", STRSYM("3000000.0000"), STRSYM("3000000.0000"), STRSYM("3000000.0000") ) );
+         BOOST_REQUIRE_EQUAL(success(), buyram( "alice1111111", "alice1111111", STRSYM("3000000.0000") ) );
          BOOST_REQUIRE_EQUAL(success(), push_action(N(alice1111111), N(voteproducer), mvo()
                                                     ("voter",  "alice1111111")
                                                     ("proxy", name(0).to_string())
@@ -926,9 +932,9 @@ public:
                                                mvo()
                                                ("from", name{config::system_account_name})
                                                ("receiver", "producer1111")
-                                               ("stake_net_quantity", core_sym::from_string("25090624.0000") )
-                                               ("stake_cpu_quantity", core_sym::from_string("0.0000") )
-                                               ("stake_vote_quantity", core_sym::from_string("0.0000"))
+                                               ("stake_net_quantity", STRSYM("25090624.0000") )
+                                               ("stake_cpu_quantity", STRSYM("0.0000") )
+                                               ("stake_vote_quantity", STRSYM("0.0000"))
                                                ("transfer", 1 )
                                              )
                                  );
@@ -945,9 +951,9 @@ public:
                                                mvo()
                                                ("from", "producer1111")
                                                ("receiver", "producer1111")
-                                               ("unstake_net_quantity", core_sym::from_string("25090624.0000") )
-                                               ("unstake_cpu_quantity", core_sym::from_string("0.0000") )
-                                               ("unstake_vote_quantity", core_sym::from_string("0.0000"))
+                                               ("unstake_net_quantity", STRSYM("25090624.0000") )
+                                               ("unstake_cpu_quantity", STRSYM("0.0000") )
+                                               ("unstake_vote_quantity", STRSYM("0.0000"))
                                              )
                                  );
 
@@ -988,7 +994,7 @@ inline fc::mutable_variant_object proxy( account_name acct ) {
 }
 
 inline uint64_t M( const string& eos_str ) {
-   return core_sym::from_string( eos_str ).get_amount();
+   return STRSYM( eos_str ).get_amount();
 }
 
 }
