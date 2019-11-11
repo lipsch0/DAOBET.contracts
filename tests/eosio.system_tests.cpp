@@ -886,9 +886,9 @@ BOOST_FIXTURE_TEST_CASE( unregistered_producer_voting, eosio_system_tester, * bo
 } FC_LOG_AND_RETHROW()
 
 
-BOOST_FIXTURE_TEST_CASE( more_than_30_producer_voting, eosio_system_tester ) try {
+BOOST_FIXTURE_TEST_CASE( more_than_1_producer_voting, eosio_system_tester ) try {
    issue( "bob111111111", STRSYM("2000.0000"),  config::system_account_name );
-   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("13.0000"), STRSYM("0.5791"), STRSYM("1.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("13.0000"), STRSYM("0.5791"), STRSYM("13.5791") ) );
    REQUIRE_MATCHING_OBJECT( voter( "bob111111111", STRSYM("13.5791") ), get_voter_info( "bob111111111" ) );
 
    //bob111111111 should not be able to vote for alice1111111 who is not a producer
@@ -896,33 +896,6 @@ BOOST_FIXTURE_TEST_CASE( more_than_30_producer_voting, eosio_system_tester ) try
                         vote( N(bob111111111), vector<account_name>(31, N(alice1111111)) ) );
 
 } FC_LOG_AND_RETHROW()
-
-
-BOOST_FIXTURE_TEST_CASE( vote_same_producer_30_times, eosio_system_tester ) try {
-   issue( "bob111111111", STRSYM("2000.0000"),  config::system_account_name );
-   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("50.0000"), STRSYM("50.0000"), STRSYM("1.0000") ) );
-   REQUIRE_MATCHING_OBJECT( voter( "bob111111111", STRSYM("100.0000") ), get_voter_info( "bob111111111" ) );
-
-   //alice1111111 becomes a producer
-   issue( "alice1111111", STRSYM("1000.0000"),  config::system_account_name );
-   fc::variant params = producer_parameters_example(1);
-   BOOST_REQUIRE_EQUAL( success(), push_action( N(alice1111111), N(regproducer), mvo()
-                                               ("producer",  "alice1111111")
-                                               ("producer_key", get_public_key(N(alice1111111), "active") )
-                                               ("url", "")
-                                               ("location", 0)
-                        )
-   );
-
-   //bob111111111 should not be able to vote for alice1111111 who is not a producer
-   BOOST_REQUIRE_EQUAL( wasm_assert_msg( "producer votes must be unique and sorted" ),
-                        vote( N(bob111111111), vector<account_name>(30, N(alice1111111)) ) );
-
-   auto prod = get_producer_info( "alice1111111" );
-   BOOST_TEST_REQUIRE( 0 == prod["total_votes"].as_double() );
-
-} FC_LOG_AND_RETHROW()
-
 
 BOOST_FIXTURE_TEST_CASE( producer_keep_votes, eosio_system_tester, * boost::unit_test::tolerance(1e+5) ) try {
    issue( "alice1111111", STRSYM("1000.0000"),  config::system_account_name );
