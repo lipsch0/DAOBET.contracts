@@ -2533,10 +2533,9 @@ BOOST_FIXTURE_TEST_CASE( voters_actions_affect_proxy_and_producers, eosio_system
 
    //alice1111111 makes stake and votes
    issue( "alice1111111", STRSYM("1000.0000"),  config::system_account_name );
-   BOOST_REQUIRE_EQUAL( success(), stake( "alice1111111", STRSYM("30.0001"), STRSYM("20.0001"), STRSYM("1.0000") ) );
-   BOOST_REQUIRE_EQUAL( success(), vote( N(alice1111111), { N(defproducer1), N(defproducer2) } ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( "alice1111111", STRSYM("30.0001"), STRSYM("20.0001"), STRSYM("50.0002") ) );
+   BOOST_REQUIRE_EQUAL( success(), vote( N(alice1111111), { N(defproducer1) } ) );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("50.0002")) == get_producer_info( "defproducer1" )["total_votes"].as_double() );
-   BOOST_TEST_REQUIRE( stake2votes(STRSYM("50.0002")) == get_producer_info( "defproducer2" )["total_votes"].as_double() );
    BOOST_REQUIRE_EQUAL( 0, get_producer_info( "defproducer3" )["total_votes"].as_double() );
 
    BOOST_REQUIRE_EQUAL( success(), push_action( N(donald111111), N(regproxy), mvo()
@@ -2548,34 +2547,30 @@ BOOST_FIXTURE_TEST_CASE( voters_actions_affect_proxy_and_producers, eosio_system
 
    //bob111111111 chooses alice1111111 as a proxy
    issue( "bob111111111", STRSYM("1000.0000"),  config::system_account_name );
-   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("100.0002"), STRSYM("50.0001"), STRSYM("1.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("100.0002"), STRSYM("50.0001"), STRSYM("150.0002") ) );
    BOOST_REQUIRE_EQUAL( success(), vote( N(bob111111111), vector<account_name>(), "alice1111111" ) );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("150.0003")) == get_voter_info( "alice1111111" )["proxied_vote_weight"].as_double() );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("200.0005")) == get_producer_info( "defproducer1" )["total_votes"].as_double() );
-   BOOST_TEST_REQUIRE( stake2votes(STRSYM("200.0005")) == get_producer_info( "defproducer2" )["total_votes"].as_double() );
    BOOST_REQUIRE_EQUAL( 0, get_producer_info( "defproducer3" )["total_votes"].as_double() );
 
    //carol1111111 chooses alice1111111 as a proxy
    issue( "carol1111111", STRSYM("1000.0000"),  config::system_account_name );
-   BOOST_REQUIRE_EQUAL( success(), stake( "carol1111111", STRSYM("30.0001"), STRSYM("20.0001"), STRSYM("1.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( "carol1111111", STRSYM("30.0001"), STRSYM("20.0001"), STRSYM("30.0002") ) );
    BOOST_REQUIRE_EQUAL( success(), vote( N(carol1111111), vector<account_name>(), "alice1111111" ) );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("200.0005")) == get_voter_info( "alice1111111" )["proxied_vote_weight"].as_double() );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("250.0007")) == get_producer_info( "defproducer1" )["total_votes"].as_double() );
-   BOOST_TEST_REQUIRE( stake2votes(STRSYM("250.0007")) == get_producer_info( "defproducer2" )["total_votes"].as_double() );
    BOOST_REQUIRE_EQUAL( 0, get_producer_info( "defproducer3" )["total_votes"].as_double() );
 
    //proxied voter carol1111111 increases stake
-   BOOST_REQUIRE_EQUAL( success(), stake( "carol1111111", STRSYM("50.0000"), STRSYM("70.0000"), STRSYM("1.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( "carol1111111", STRSYM("50.0000"), STRSYM("70.0000"), STRSYM("120.0000") ) );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("320.0005")) == get_voter_info( "alice1111111" )["proxied_vote_weight"].as_double() );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("370.0007")) == get_producer_info( "defproducer1" )["total_votes"].as_double() );
-   BOOST_TEST_REQUIRE( stake2votes(STRSYM("370.0007")) == get_producer_info( "defproducer2" )["total_votes"].as_double() );
    BOOST_REQUIRE_EQUAL( 0, get_producer_info( "defproducer3" )["total_votes"].as_double() );
 
    //proxied voter bob111111111 decreases stake
-   BOOST_REQUIRE_EQUAL( success(), unstake( "bob111111111", STRSYM("50.0001"), STRSYM("50.0001"), STRSYM("1.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), unstake( "bob111111111", STRSYM("50.0001"), STRSYM("50.0001"), STRSYM("100.0002") ) );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("220.0003")) == get_voter_info( "alice1111111" )["proxied_vote_weight"].as_double() );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("270.0005")) == get_producer_info( "defproducer1" )["total_votes"].as_double() );
-   BOOST_TEST_REQUIRE( stake2votes(STRSYM("270.0005")) == get_producer_info( "defproducer2" )["total_votes"].as_double() );
    BOOST_REQUIRE_EQUAL( 0, get_producer_info( "defproducer3" )["total_votes"].as_double() );
 
    //proxied voter carol1111111 chooses another proxy
@@ -2583,14 +2578,12 @@ BOOST_FIXTURE_TEST_CASE( voters_actions_affect_proxy_and_producers, eosio_system
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("50.0001")), get_voter_info( "alice1111111" )["proxied_vote_weight"].as_double() );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("170.0002")), get_voter_info( "donald111111" )["proxied_vote_weight"].as_double() );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("100.0003")), get_producer_info( "defproducer1" )["total_votes"].as_double() );
-   BOOST_TEST_REQUIRE( stake2votes(STRSYM("100.0003")), get_producer_info( "defproducer2" )["total_votes"].as_double() );
    BOOST_REQUIRE_EQUAL( 0, get_producer_info( "defproducer3" )["total_votes"].as_double() );
 
    //bob111111111 switches to direct voting and votes for one of the same producers, but not for another one
    BOOST_REQUIRE_EQUAL( success(), vote( N(bob111111111), { N(defproducer2) } ) );
    BOOST_TEST_REQUIRE( 0.0 == get_voter_info( "alice1111111" )["proxied_vote_weight"].as_double() );
    BOOST_TEST_REQUIRE(  stake2votes(STRSYM("50.0002")), get_producer_info( "defproducer1" )["total_votes"].as_double() );
-   BOOST_TEST_REQUIRE( stake2votes(STRSYM("100.0003")), get_producer_info( "defproducer2" )["total_votes"].as_double() );
    BOOST_TEST_REQUIRE( 0.0 == get_producer_info( "defproducer3" )["total_votes"].as_double() );
 
 } FC_LOG_AND_RETHROW()
