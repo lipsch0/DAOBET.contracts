@@ -12,6 +12,7 @@ jobs:
         - rm -rf build
         - ./cicd/run build
         - ./cicd/run pack
+        - ./cicd/run test
 
 deploy:
   provider: releases

@@ -166,7 +166,7 @@ public:
                                             ("receiver", a)
                                             ("stake_net_quantity", STRSYM("10.0000") )
                                             ("stake_cpu_quantity", STRSYM("10.0000") )
-                                            ("stake_vote_quantity", STRSYM("10.0000"))
+                                            ("stake_vote_quantity", STRSYM("0.0000"))
                                             ("transfer", 0 )
                                           )
                                 );
@@ -182,7 +182,7 @@ public:
                                                         bool multisig,
                                                         asset net = STRSYM("10.0000"),
                                                         asset cpu = STRSYM("10.0000"),
-                                                        asset vote = STRSYM("10.0000") ) {
+                                                        asset vote = STRSYM("0.0000") ) {
       signed_transaction trx;
       set_transaction_headers(trx);
 
@@ -572,9 +572,9 @@ public:
                                                mvo()
                                                ("from", name{config::system_account_name})
                                                ("receiver", "producer1111")
-                                               ("stake_net_quantity", STRSYM("25090624.0000") )
+                                               ("stake_net_quantity", STRSYM("0.0000") )
                                                ("stake_cpu_quantity", STRSYM("0.0000") )
-                                               ("stake_vote_quantity", STRSYM("0.0000"))
+                                               ("stake_vote_quantity", STRSYM("25090624.0000"))
                                                ("transfer", 1 )
                                              )
                                  );
@@ -591,9 +591,9 @@ public:
                                                mvo()
                                                ("from", "producer1111")
                                                ("receiver", "producer1111")
-                                               ("unstake_net_quantity", STRSYM("25090624.0000") )
+                                               ("unstake_net_quantity", STRSYM("0.0000") )
                                                ("unstake_cpu_quantity", STRSYM("0.0000") )
-                                               ("unstake_vote_quantity", STRSYM("0.0000"))
+                                               ("unstake_vote_quantity", STRSYM("25090624.0000"))
                                              )
                                  );
 
