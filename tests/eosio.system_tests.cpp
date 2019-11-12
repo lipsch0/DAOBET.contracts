@@ -853,7 +853,7 @@ BOOST_FIXTURE_TEST_CASE( vote_for_producer, eosio_system_tester, * boost::unit_t
 
 BOOST_FIXTURE_TEST_CASE( unregistered_producer_voting, eosio_system_tester, * boost::unit_test::tolerance(1e+5) ) try {
    issue( "bob111111111", STRSYM("2000.0000"),  config::system_account_name );
-   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("13.0000"), STRSYM("0.5791"), STRSYM("1.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("13.0000"), STRSYM("1.0000"), STRSYM("13.5791") ) );
    REQUIRE_MATCHING_OBJECT( voter( "bob111111111", STRSYM("13.5791") ), get_voter_info( "bob111111111" ) );
 
    //bob111111111 should not be able to vote for alice1111111 who is not a producer
