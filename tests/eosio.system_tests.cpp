@@ -963,61 +963,6 @@ BOOST_FIXTURE_TEST_CASE( producer_keep_votes, eosio_system_tester, * boost::unit
 
 } FC_LOG_AND_RETHROW()
 
-
-BOOST_FIXTURE_TEST_CASE( vote_for_two_producers, eosio_system_tester, * boost::unit_test::tolerance(1e+5) ) try {
-   //alice1111111 becomes a producer
-   fc::variant params = producer_parameters_example(1);
-   auto key = get_public_key( N(alice1111111), "active" );
-   BOOST_REQUIRE_EQUAL( success(), push_action( N(alice1111111), N(regproducer), mvo()
-                                               ("producer",  "alice1111111")
-                                               ("producer_key", get_public_key( N(alice1111111), "active") )
-                                               ("url","")
-                                               ("location", 0)
-                        )
-   );
-   //bob111111111 becomes a producer
-   params = producer_parameters_example(2);
-   key = get_public_key( N(bob111111111), "active" );
-   BOOST_REQUIRE_EQUAL( success(), push_action( N(bob111111111), N(regproducer), mvo()
-                                               ("producer",  "bob111111111")
-                                               ("producer_key", get_public_key( N(alice1111111), "active") )
-                                               ("url","")
-                                               ("location", 0)
-                        )
-   );
-
-   //carol1111111 votes for alice1111111 and bob111111111
-   issue( "carol1111111", STRSYM("1000.0000"),  config::system_account_name );
-   BOOST_REQUIRE_EQUAL( success(), stake( "carol1111111", STRSYM("15.0005"), STRSYM("5.0000"), STRSYM("1.0000") ) );
-   BOOST_REQUIRE_EQUAL( success(), vote( N(carol1111111), { N(alice1111111), N(bob111111111) } ) );
-
-   auto alice_info = get_producer_info( "alice1111111" );
-   BOOST_TEST_REQUIRE( stake2votes(STRSYM("20.0005")) == alice_info["total_votes"].as_double() );
-   auto bob_info = get_producer_info( "bob111111111" );
-   BOOST_TEST_REQUIRE( stake2votes(STRSYM("20.0005")) == bob_info["total_votes"].as_double() );
-
-   //carol1111111 votes for alice1111111 (but revokes vote for bob111111111)
-   BOOST_REQUIRE_EQUAL( success(), vote( N(carol1111111), { N(alice1111111) } ) );
-
-   alice_info = get_producer_info( "alice1111111" );
-   BOOST_TEST_REQUIRE( stake2votes(STRSYM("20.0005")) == alice_info["total_votes"].as_double() );
-   bob_info = get_producer_info( "bob111111111" );
-   BOOST_TEST_REQUIRE( 0 == bob_info["total_votes"].as_double() );
-
-   //alice1111111 votes for herself and bob111111111
-   issue( "alice1111111", STRSYM("2.0000"),  config::system_account_name );
-   BOOST_REQUIRE_EQUAL( success(), stake( "alice1111111", STRSYM("1.0000"), STRSYM("1.0000"), STRSYM("1.0000") ) );
-   BOOST_REQUIRE_EQUAL( success(), vote(N(alice1111111), { N(alice1111111), N(bob111111111) } ) );
-
-   alice_info = get_producer_info( "alice1111111" );
-   BOOST_TEST_REQUIRE( stake2votes(STRSYM("22.0005")) == alice_info["total_votes"].as_double() );
-
-   bob_info = get_producer_info( "bob111111111" );
-   BOOST_TEST_REQUIRE( stake2votes(STRSYM("2.0000")) == bob_info["total_votes"].as_double() );
-
-} FC_LOG_AND_RETHROW()
-
-
 BOOST_FIXTURE_TEST_CASE( proxy_register_unregister_keeps_stake, eosio_system_tester ) try {
    //register proxy by first action for this user ever
    BOOST_REQUIRE_EQUAL( success(), push_action(N(alice1111111), N(regproxy), mvo()
