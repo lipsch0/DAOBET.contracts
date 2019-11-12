@@ -2721,8 +2721,8 @@ BOOST_FIXTURE_TEST_CASE( buyname, eosio_system_tester ) try {
    create_accounts_with_resources( { N(dan), N(sam) } );
    transfer( config::system_account_name, "dan", STRSYM( "10000.0000" ) );
    transfer( config::system_account_name, "sam", STRSYM( "10000.0000" ) );
-   stake_with_transfer( config::system_account_name, "sam", STRSYM("80000000.0000"), STRSYM("80000000.0000"), STRSYM("1000.0000") );
-   stake_with_transfer( config::system_account_name, "dan", STRSYM("80000000.0000"), STRSYM("80000000.0000"), STRSYM("1000.0000") );
+   stake_with_transfer( config::system_account_name, "sam", STRSYM("1000.0000"), STRSYM("1000.0000"), STRSYM("30000000.0000") );
+   stake_with_transfer( config::system_account_name, "dan", STRSYM("1000.0000"), STRSYM("1000.0000"), STRSYM("30000000.0000") );
 
    regproducer( config::system_account_name );
    BOOST_REQUIRE_EQUAL( success(), vote( N(sam), { config::system_account_name } ) );
