@@ -775,21 +775,21 @@ BOOST_FIXTURE_TEST_CASE( vote_for_producer, eosio_system_tester, * boost::unit_t
    BOOST_REQUIRE_EQUAL( success(), push_action( N(alice1111111), N(regproducer), mvo()
                                                ("producer",  "alice1111111")
                                                ("producer_key", get_public_key( N(alice1111111), "active") )
-                                               ("url", "http://block.one")
+                                               ("url", "http://daobet.org")
                                                ("location", 0 )
                         )
    );
    auto prod = get_producer_info( "alice1111111" );
    BOOST_REQUIRE_EQUAL( "alice1111111", prod["owner"].as_string() );
    BOOST_REQUIRE_EQUAL( 0, prod["total_votes"].as_double() );
-   BOOST_REQUIRE_EQUAL( "http://block.one", prod["url"].as_string() );
+   BOOST_REQUIRE_EQUAL( "http://daobet.org", prod["url"].as_string() );
 
    issue( "bob111111111", STRSYM("2000.0000"),  config::system_account_name );
    issue( "carol1111111", STRSYM("3000.0000"),  config::system_account_name );
 
    //bob111111111 makes stake
-   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("11.0000"), STRSYM("0.1111"), STRSYM("10.0000") ) );
-   BOOST_REQUIRE_EQUAL( STRSYM("1988.8889"), get_balance( "bob111111111" ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("11.0000"), STRSYM("0.1111"), STRSYM("11.1111") ) );
+   BOOST_REQUIRE_EQUAL( STRSYM("1977.7778"), get_balance( "bob111111111" ) );
    REQUIRE_MATCHING_OBJECT( voter( "bob111111111", STRSYM("11.1111") ), get_voter_info( "bob111111111" ) );
 
    //bob111111111 votes for alice1111111
@@ -799,12 +799,12 @@ BOOST_FIXTURE_TEST_CASE( vote_for_producer, eosio_system_tester, * boost::unit_t
    prod = get_producer_info( "alice1111111" );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("11.1111")) == prod["total_votes"].as_double() );
    BOOST_REQUIRE_EQUAL( "alice1111111", prod["owner"].as_string() );
-   BOOST_REQUIRE_EQUAL( "http://block.one", prod["url"].as_string() );
+   BOOST_REQUIRE_EQUAL( "http://daobet.org", prod["url"].as_string() );
 
    //carol1111111 makes stake
-   BOOST_REQUIRE_EQUAL( success(), stake( "carol1111111", STRSYM("22.0000"), STRSYM("0.2222"), STRSYM("10.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( "carol1111111", STRSYM("22.0000"), STRSYM("0.2222"), STRSYM("22.2222") ) );
    REQUIRE_MATCHING_OBJECT( voter( "carol1111111", STRSYM("22.2222") ), get_voter_info( "carol1111111" ) );
-   BOOST_REQUIRE_EQUAL( STRSYM("2977.7778"), get_balance( "carol1111111" ) );
+   BOOST_REQUIRE_EQUAL( STRSYM("2955.5556"), get_balance( "carol1111111" ) );
    //carol1111111 votes for alice1111111
    BOOST_REQUIRE_EQUAL( success(), vote( N(carol1111111), { N(alice1111111) } ) );
 
@@ -813,15 +813,15 @@ BOOST_FIXTURE_TEST_CASE( vote_for_producer, eosio_system_tester, * boost::unit_t
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("33.3333")) == prod["total_votes"].as_double() );
 
    //bob111111111 increases his stake
-   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("33.0000"), STRSYM("0.3333"), STRSYM("10.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("33.0000"), STRSYM("0.3333"), STRSYM("33.3333") ) );
    //alice1111111 stake with transfer to bob111111111
-   BOOST_REQUIRE_EQUAL( success(), stake_with_transfer( "alice1111111", "bob111111111", STRSYM("22.0000"), STRSYM("0.2222"), STRSYM("20.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake_with_transfer( "alice1111111", "bob111111111", STRSYM("22.0000"), STRSYM("0.2222"), STRSYM("22.2222") ) );
    //should increase alice1111111's total_votes
    prod = get_producer_info( "alice1111111" );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("88.8888")) == prod["total_votes"].as_double() );
 
    //carol1111111 unstakes part of the stake
-   BOOST_REQUIRE_EQUAL( success(), unstake( "carol1111111", STRSYM("2.0000"), STRSYM("0.0002")/*"2.0000 EOS", "0.0002 EOS"*/, STRSYM("2.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), unstake( "carol1111111", STRSYM("2.0000"), STRSYM("0.0002")/*"2.0000 EOS", "0.0002 EOS"*/, STRSYM("2.0002") ) );
 
    //should decrease alice1111111's total_votes
    prod = get_producer_info( "alice1111111" );
@@ -835,10 +835,10 @@ BOOST_FIXTURE_TEST_CASE( vote_for_producer, eosio_system_tester, * boost::unit_t
    prod = get_producer_info( "alice1111111" );
    BOOST_TEST_REQUIRE( stake2votes(STRSYM("20.2220")) == prod["total_votes"].as_double() );
    //but eos should still be at stake
-   BOOST_REQUIRE_EQUAL( STRSYM("1955.5556"), get_balance( "bob111111111" ) );
+   BOOST_REQUIRE_EQUAL( STRSYM("1911.1112"), get_balance( "bob111111111" ) );
 
    //carol1111111 unstakes rest of eos
-   BOOST_REQUIRE_EQUAL( success(), unstake( "carol1111111", STRSYM("20.0000"), STRSYM("0.2220"), STRSYM("1.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), unstake( "carol1111111", STRSYM("20.0000"), STRSYM("0.2220"), STRSYM("20.2220") ) );
    //should decrease alice1111111's total_votes to zero
    prod = get_producer_info( "alice1111111" );
    BOOST_TEST_REQUIRE( 0.0 == prod["total_votes"].as_double() );
