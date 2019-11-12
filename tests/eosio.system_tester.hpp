@@ -42,6 +42,7 @@ public:
 
       create_accounts({
          N(dao),
+         N(eosio.saving),
          N(eosio.bpay),
          N(eosio.names),
          N(eosio.ram),
@@ -182,7 +183,8 @@ public:
                                                         bool multisig,
                                                         asset net = STRSYM("10.0000"),
                                                         asset cpu = STRSYM("10.0000"),
-                                                        asset vote = STRSYM("10.0000") ) {
+                                                        asset vote = STRSYM("10.0000"),
+                                                        bool transfer = false) {
       signed_transaction trx;
       set_transaction_headers(trx);
 
@@ -216,7 +218,7 @@ public:
                                             ("stake_net_quantity", net )
                                             ("stake_cpu_quantity", cpu )
                                             ("stake_vote_quantity", vote)
-                                            ("transfer", 0 )
+                                            ("transfer", transfer ? 1 : 0 )
                                           )
                                 );
 
