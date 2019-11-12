@@ -262,7 +262,7 @@ public:
                                                ("stake_net_quantity", net)
                                                ("stake_cpu_quantity", cpu)
                                                ("stake_vote_quantity", vote)
-                                               ("transfer", 0)
+                                               ("transfer", 1)
                                                )
                                    );
       }
@@ -510,7 +510,7 @@ public:
 
    vector<name> active_and_vote_producers() {
       //stake more than 15% of total EOS supply to activate chain
-      transfer( "eosio", "alice1111111", STRSYM("75090624.0000"), "eosio" );
+      transfer( "eosio", "alice1111111", STRSYM("75271872.0000"), "eosio" );
       BOOST_REQUIRE_EQUAL( success(), stake( "alice1111111", STRSYM("25090624.0000"), STRSYM("25090624.0000"), STRSYM("25090624.0000") ) );
 
       // create accounts {defproducera, defproducerb, ..., defproducerz} and register as producers
@@ -541,19 +541,24 @@ public:
       );
       BOOST_REQUIRE_EQUAL(transaction_receipt::executed, trace_auth->receipt->status);
 
-      //vote for producers
-      {
-         transfer( config::system_account_name, "alice1111111", STRSYM("10000000.0000"), config::system_account_name );
-         BOOST_REQUIRE_EQUAL(success(), stake( "alice1111111", STRSYM("3000000.0000"), STRSYM("3000000.0000"), STRSYM("3000000.0000") ) );
-         BOOST_REQUIRE_EQUAL(success(), buyram( "alice1111111", "alice1111111", STRSYM("3000000.0000") ) );
-         BOOST_REQUIRE_EQUAL(success(), push_action(N(alice1111111), N(voteproducer), mvo()
-                                                    ("voter",  "alice1111111")
+      const std::string voter_root("producvoter");
+      auto voter_balance = STRSYM("2860000.0000");
+      auto vote_stake = STRSYM("1430000.0000");
+      auto ram_stake = STRSYM("1430000.0000");
+      for (auto i = 0; i < 21; ++i) {
+         auto voter = account_name(std::string(voter_root + (char)('a' + i)));
+         create_account_with_resources(voter, config::system_account_name);
+         transfer(config::system_account_name, voter, voter_balance, config::system_account_name);
+         BOOST_REQUIRE_EQUAL(success(), stake( voter, STRSYM("0.0000"), STRSYM("0.0000"), vote_stake) );
+         BOOST_REQUIRE_EQUAL(success(), buyram( voter, voter, ram_stake ) );
+         BOOST_REQUIRE_EQUAL(success(), push_action(voter, N(voteproducer), mvo()
+                                                    ("voter",  voter)
                                                     ("proxy", name(0).to_string())
-                                                    ("producers", vector<account_name>(producer_names.begin(), producer_names.begin()+21))
+                                                    ("producers", vector<account_name>{ producer_names[i] })
                              )
          );
       }
-      produce_blocks( 250 );
+      produce_blocks( 700 );
 
       auto producer_keys = control->head_block_state()->active_schedule.producers;
       BOOST_REQUIRE_EQUAL( 21, producer_keys.size() );
