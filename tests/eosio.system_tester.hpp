@@ -183,7 +183,7 @@ public:
                                                         bool multisig,
                                                         asset net = STRSYM("10.0000"),
                                                         asset cpu = STRSYM("10.0000"),
-                                                        asset vote = STRSYM("10.0000"),
+                                                        asset vote = STRSYM("0.0000"),
                                                         bool transfer = false) {
       signed_transaction trx;
       set_transaction_headers(trx);
