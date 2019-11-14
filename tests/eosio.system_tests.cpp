@@ -1203,7 +1203,7 @@ BOOST_FIXTURE_TEST_CASE(producer_pay, eosio_system_tester, * boost::unit_test::t
    BOOST_REQUIRE_EQUAL(0, prod["total_votes"].as_double());
 
    transfer( config::system_account_name, "producvotera", STRSYM("60000000.0000"), config::system_account_name);
-   BOOST_REQUIRE_EQUAL(success(), stake("producvotera", STRSYM("20000000.0000"), STRSYM("20000000.0000"), STRSYM("10.0000")));
+   BOOST_REQUIRE_EQUAL(success(), stake("producvotera", STRSYM("10.0000"), STRSYM("10.0000"), STRSYM("30000000.0000")));
    BOOST_REQUIRE_EQUAL(success(), vote( N(producvotera), { N(defproducera) }));
    // defproducera is the only active producer
    // produce enough blocks so new schedule kicks in and defproducera produces some blocks
@@ -1214,7 +1214,7 @@ BOOST_FIXTURE_TEST_CASE(producer_pay, eosio_system_tester, * boost::unit_test::t
       const uint64_t initial_claim_time        = microseconds_since_epoch_of_iso_string( initial_global_state["last_pervote_bucket_fill"] );
       const int64_t  initial_pervote_bucket    = initial_global_state["pervote_bucket"].as<int64_t>();
       const int64_t  initial_perblock_bucket   = initial_global_state["perblock_bucket"].as<int64_t>();
-      const int64_t  initial_dao               = get_balance(N(dao)).get_amount();
+      const int64_t  initial_dao               = get_balance(N(eosio.saving)).get_amount();
       const uint32_t initial_tot_unpaid_blocks = initial_global_state["total_unpaid_blocks"].as<uint32_t>();
 
       prod = get_producer_info("defproducera");
@@ -1234,7 +1234,7 @@ BOOST_FIXTURE_TEST_CASE(producer_pay, eosio_system_tester, * boost::unit_test::t
       const uint64_t claim_time        = microseconds_since_epoch_of_iso_string( global_state["last_pervote_bucket_fill"] );
       const int64_t  pervote_bucket    = global_state["pervote_bucket"].as<int64_t>();
       const int64_t  perblock_bucket   = global_state["perblock_bucket"].as<int64_t>();
-      const int64_t  dao               = get_balance(N(dao)).get_amount();
+      const int64_t  dao               = get_balance(N(eosio.saving)).get_amount();
       const uint32_t tot_unpaid_blocks = global_state["total_unpaid_blocks"].as<uint32_t>();
 
       prod = get_producer_info("defproducera");
@@ -1253,6 +1253,8 @@ BOOST_FIXTURE_TEST_CASE(producer_pay, eosio_system_tester, * boost::unit_test::t
       BOOST_REQUIRE_EQUAL(0, initial_pervote_bucket);
 
       auto minted = supply.get_amount() - initial_supply.get_amount();
+
+    std::cout << dao;
 
       BOOST_REQUIRE_EQUAL(int64_t( ( initial_supply.get_amount() * double(secs_between_fills) * continuous_rate ) / secs_per_year ),
                           supply.get_amount() - initial_supply.get_amount());
@@ -1297,7 +1299,7 @@ BOOST_FIXTURE_TEST_CASE(producer_pay, eosio_system_tester, * boost::unit_test::t
       const uint64_t initial_claim_time        = microseconds_since_epoch_of_iso_string( initial_global_state["last_pervote_bucket_fill"] );
       const int64_t  initial_pervote_bucket    = initial_global_state["pervote_bucket"].as<int64_t>();
       const int64_t  initial_perblock_bucket   = initial_global_state["perblock_bucket"].as<int64_t>();
-      const int64_t  initial_dao               = get_balance(N(dao)).get_amount();
+      const int64_t  initial_dao               = get_balance(N(eosio.saving)).get_amount();
       const uint32_t initial_tot_unpaid_blocks = initial_global_state["total_unpaid_blocks"].as<uint32_t>();
       const double   initial_tot_vote_weight   = initial_global_state["total_producer_vote_weight"].as<double>();
 
@@ -1322,7 +1324,7 @@ BOOST_FIXTURE_TEST_CASE(producer_pay, eosio_system_tester, * boost::unit_test::t
       const uint64_t claim_time        = microseconds_since_epoch_of_iso_string( global_state["last_pervote_bucket_fill"] );
       const int64_t  pervote_bucket    = global_state["pervote_bucket"].as<int64_t>();
       const int64_t  perblock_bucket   = global_state["perblock_bucket"].as<int64_t>();
-      const int64_t  dao               = get_balance(N(dao)).get_amount();
+      const int64_t  dao               = get_balance(N(eosio.saving)).get_amount();
       const uint32_t tot_unpaid_blocks = global_state["total_unpaid_blocks"].as<uint32_t>();
 
       prod = get_producer_info("defproducera");
@@ -1345,7 +1347,7 @@ BOOST_FIXTURE_TEST_CASE(producer_pay, eosio_system_tester, * boost::unit_test::t
       int64_t to_pervote_bucket  = to_producer - to_perblock_bucket;
 
       if (to_pervote_bucket + initial_pervote_bucket >= 100 * 10000) {
-         BOOST_REQUIRE_EQUAL(to_perblock_bucket + to_pervote_bucket + initial_pervote_bucket, balance.get_amount() - initial_balance.get_amount());
+         BOOST_REQUIRE_EQUAL(to_producer + initial_pervote_bucket, balance.get_amount() - initial_balance.get_amount());
          BOOST_REQUIRE_EQUAL(0, pervote_bucket);
       } else {
          BOOST_REQUIRE_EQUAL(to_perblock_bucket, balance.get_amount() - initial_balance.get_amount());
@@ -1365,7 +1367,7 @@ BOOST_FIXTURE_TEST_CASE(producer_pay, eosio_system_tester, * boost::unit_test::t
       regproducer(N(defproducerc));
       produce_block(fc::hours(24));
       const asset   initial_supply  = get_token_supply();
-      const int64_t initial_dao = get_balance(N(dao)).get_amount();
+      const int64_t initial_dao = get_balance(N(eosio.saving)).get_amount();
       const auto    initial_global_state = get_global_state();
 
       const double emission_rate = get_target_emission_per_year(1.0 * initial_global_state["total_activated_stake"].as<int64_t>() / initial_supply.get_amount());
@@ -1379,7 +1381,7 @@ BOOST_FIXTURE_TEST_CASE(producer_pay, eosio_system_tester, * boost::unit_test::t
          BOOST_REQUIRE_EQUAL(success(), push_action(N(defproducera), N(claimrewards), mvo()("owner", "defproducera")));
       }
       const asset   supply  = get_token_supply();
-      const int64_t dao = get_balance(N(dao)).get_amount();
+      const int64_t dao = get_balance(N(eosio.saving)).get_amount();
 
       auto after_year = int64_t(double(initial_supply.get_amount()) * (1 + emission_rate));
       BOOST_REQUIRE(1e-3 > 1.0 * abs(after_year - supply.get_amount()) / initial_supply.get_amount());
@@ -1638,7 +1640,7 @@ BOOST_FIXTURE_TEST_CASE(multiple_producer_pay, eosio_system_tester, * boost::uni
       const uint32_t initial_unpaid_blocks     = initial_prod_info["unpaid_blocks"].as<uint32_t>();
       const uint64_t initial_claim_time        = microseconds_since_epoch_of_iso_string( initial_prod_info["last_claim_time"] );
       const uint64_t initial_prod_update_time  = microseconds_since_epoch_of_iso_string( initial_prod_info2["last_votepay_share_update"] );
-      const int64_t  initial_dao               = get_balance(N(dao)).get_amount();
+      const int64_t  initial_dao               = get_balance(N(eosio.saving)).get_amount();
 
       const double emission_rate = get_target_emission_per_year(1.0 * initial_global_state["total_activated_stake"].as<int64_t>() / initial_supply.get_amount());
       const double continuous_rate = get_continuous_rate(emission_rate);
@@ -1647,7 +1649,7 @@ BOOST_FIXTURE_TEST_CASE(multiple_producer_pay, eosio_system_tester, * boost::uni
       BOOST_TEST_REQUIRE( 0 == get_producer_info2(prod_name)["votepay_share"].as_double() );
       BOOST_REQUIRE_EQUAL( success(), push_action(prod_name, N(claimrewards), mvo()("owner", prod_name) ) );
 
-      const int64_t  dao               = get_balance(N(dao)).get_amount();
+      const int64_t  dao               = get_balance(N(eosio.saving)).get_amount();
       const auto     prod_info         = get_producer_info(prod_name);
       const auto     prod_info2        = get_producer_info2(prod_name);
       const auto     global_state      = get_global_state();
@@ -2328,20 +2330,21 @@ BOOST_FIXTURE_TEST_CASE(producer_onblock_check, eosio_system_tester) try {
    }
    setup_producer_accounts(producer_names);
 
-   for (auto a:producer_names)
+   for (auto a:producer_names) {
       regproducer(a);
+   }
 
    produce_block(fc::hours(24));
 
    BOOST_REQUIRE_EQUAL(0, get_producer_info( producer_names.front() )["total_votes"].as<double>());
    BOOST_REQUIRE_EQUAL(0, get_producer_info( producer_names.back() )["total_votes"].as<double>());
 
-
-   transfer(config::system_account_name, "producvotera", STRSYM("50000000.0000"), config::system_account_name);
-   BOOST_REQUIRE_EQUAL(success(), stake("producvotera", STRSYM("70000.0000"), STRSYM("700000.0000"), STRSYM("1.0000") ));
-   BOOST_REQUIRE_EQUAL(success(), vote( N(producvotera), vector<account_name>(producer_names.begin(), producer_names.begin()+10)));
    BOOST_CHECK_EQUAL( wasm_assert_msg( "cannot undelegate bandwidth until the chain is activated (at least 15% of all tokens participate in voting)" ),
-                      unstake( "producvotera", STRSYM("50.0000"), STRSYM("50.0000"), STRSYM("1.0000") ) );
+                      unstake( "defproducera", STRSYM("50.0000"), STRSYM("50.0000"), STRSYM("1.0000") ) );
+
+   for (auto && p: producer_names) {
+      vote(p, { p });
+   }
 
    // give a chance for everyone to produce blocks
    {
@@ -2374,13 +2377,17 @@ BOOST_FIXTURE_TEST_CASE(producer_onblock_check, eosio_system_tester) try {
    }
 
    // stake across 15% boundary
-   transfer(config::system_account_name, "producvoterb", STRSYM("50000000.0000"), config::system_account_name);
-   BOOST_REQUIRE_EQUAL(success(), stake("producvoterb", STRSYM("25000000.0000"), STRSYM("25000000.0000"), STRSYM("1.0000")));
-   transfer(config::system_account_name, "producvoterc", STRSYM("50000000.0000"), config::system_account_name);
-   BOOST_REQUIRE_EQUAL(success(), stake("producvoterc", STRSYM("20000000.0000"), STRSYM("20000000.0000"), STRSYM("1.0000")));
+   for (auto i = 0; i < 21; ++i) {
+      transfer(config::system_account_name, producer_names[i], STRSYM("1.0000"));
+      BOOST_REQUIRE_EQUAL(success(), stake(producer_names[i], STRSYM("0.0000"), STRSYM("0.0000"), STRSYM("1.0000")));
+      BOOST_REQUIRE_EQUAL(success(), vote(producer_names[i], { producer_names[i] }));
+   }
 
-   BOOST_REQUIRE_EQUAL(success(), vote( N(producvoterb), vector<account_name>(producer_names.begin(), producer_names.begin()+21)));
-   BOOST_REQUIRE_EQUAL(success(), vote( N(producvoterc), vector<account_name>(producer_names.begin(), producer_names.end())));
+   transfer(config::system_account_name, "producvotera", STRSYM("30000200.0000"));
+   BOOST_REQUIRE_EQUAL(success(), stake("producvotera", STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("30000000.0000")));
+   BOOST_REQUIRE_EQUAL(success(), vote("producvotera", { producer_names.front() }));
+
+    std::cout << get_global_state();
 
    // give a chance for everyone to produce blocks
    {

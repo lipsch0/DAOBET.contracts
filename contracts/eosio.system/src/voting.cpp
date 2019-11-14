@@ -120,10 +120,10 @@ namespace eosiosystem {
       for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < target_schedule_size && 0 < it->total_votes && it->active(); ++it ) {
          del_bandwidth_table del_tbl( _self, it->owner.value );
          auto itr = del_tbl.find( it->owner.value );
-         if (itr == del_tbl.end()) {
-            continue;
+         asset total_staked(0, core_symbol());
+         if (itr != del_tbl.end()) {
+            total_staked = itr->net_weight + itr->cpu_weight + itr->vote_weight;
          }
-         auto total_staked = itr->net_weight + itr->cpu_weight + itr->vote_weight;
          if (total_staked.amount >= min_producer_activated_share * token_supply.amount) {
             top_producers.emplace_back( std::pair<eosio::producer_key,uint16_t>({{it->owner, it->producer_key}, it->location}) );
          }
