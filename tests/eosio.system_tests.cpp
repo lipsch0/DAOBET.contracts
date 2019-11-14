@@ -2025,9 +2025,10 @@ BOOST_FIXTURE_TEST_CASE(votepay_share_update_order, eosio_system_tester, * boost
 
    const asset net = STRSYM("80.0000");
    const asset cpu = STRSYM("80.0000");
+   const asset vote_stake = STRSYM("0.0000");
    const std::vector<account_name> accounts = { N(aliceaccount), N(bobbyaccount), N(carolaccount), N(emilyaccount) };
    for (const auto& a: accounts) {
-      create_account_with_resources( a, config::system_account_name, STRSYM("1.0000"), false, net, cpu );
+      create_account_with_resources( a, config::system_account_name, STRSYM("1.0000"), false, net, cpu, vote_stake );
       transfer( config::system_account_name, a, STRSYM("1000.0000"), config::system_account_name );
    }
    const auto alice = accounts[0];
@@ -2040,10 +2041,13 @@ BOOST_FIXTURE_TEST_CASE(votepay_share_update_order, eosio_system_tester, * boost
 
    produce_block( fc::hours(24) );
 
-   BOOST_REQUIRE_EQUAL( success(), stake( alice, STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("1.0000") ) );
-   BOOST_REQUIRE_EQUAL( success(), stake( bob,   STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("1.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( carol, STRSYM("1.0000"), STRSYM("1.0000"), STRSYM("0.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( emily, STRSYM("1.0000"), STRSYM("1.0000"), STRSYM("0.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( alice, STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("200.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( bob,   STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("200.0000") ) );
 
-   BOOST_REQUIRE_EQUAL( success(), vote( alice, { carol, emily } ) );
+   BOOST_REQUIRE_EQUAL( success(), vote( alice, { carol } ) );
+   BOOST_REQUIRE_EQUAL( success(), vote( bob, { emily } ) );
 
 
    BOOST_REQUIRE_EQUAL( success(), push_action( carol, N(claimrewards), mvo()("owner", carol) ) );
@@ -2059,9 +2063,11 @@ BOOST_FIXTURE_TEST_CASE(votepay_share_update_order, eosio_system_tester, * boost
       trx.actions.emplace_back( get_action( config::system_account_name, N(claimrewards), { {carol, config::active_name} },
                                             mvo()("owner", carol) ) );
 
-      std::vector<account_name> prods = { carol, emily };
       trx.actions.emplace_back( get_action( config::system_account_name, N(voteproducer), { {alice, config::active_name} },
-                                            mvo()("voter", alice)("proxy", name(0))("producers", prods) ) );
+                                            mvo()("voter", alice)("proxy", name(0))("producers", std::vector<account_name>{ carol }) ) );
+
+      trx.actions.emplace_back( get_action( config::system_account_name, N(voteproducer), { {bob, config::active_name} },
+                                            mvo()("voter", bob)("proxy", name(0))("producers", std::vector<account_name>{ emily }) ) );
 
       trx.actions.emplace_back( get_action( config::system_account_name, N(claimrewards), { {emily, config::active_name} },
                                             mvo()("owner", emily) ) );
@@ -2069,6 +2075,7 @@ BOOST_FIXTURE_TEST_CASE(votepay_share_update_order, eosio_system_tester, * boost
       trx.sign( get_private_key( carol, "active" ), control->get_chain_id() );
       trx.sign( get_private_key( alice, "active" ), control->get_chain_id() );
       trx.sign( get_private_key( emily, "active" ), control->get_chain_id() );
+      trx.sign( get_private_key( bob, "active" ), control->get_chain_id() );
 
       push_transaction( trx );
    }
@@ -2786,8 +2793,8 @@ BOOST_FIXTURE_TEST_CASE( multiple_namebids, eosio_system_tester ) try {
 
    produce_block();
    // stake but but not enough to go live
-   stake_with_transfer( config::system_account_name, "bob", STRSYM("35000000.0000"), STRSYM("35000000.0000"), STRSYM("1000.0000") );
-   stake_with_transfer( config::system_account_name, "carl", STRSYM("35000000.0000"), STRSYM("35000000.0000"), STRSYM("1000.0000") );
+   stake_with_transfer( config::system_account_name, "bob", STRSYM("35.0000"), STRSYM("35.0000"), STRSYM("3000000.0000") );
+   stake_with_transfer( config::system_account_name, "carl", STRSYM("35.0000"), STRSYM("35.0000"), STRSYM("3000000.0000") );
    BOOST_REQUIRE_EQUAL( success(), vote( N(bob), { N(producer) } ) );
    BOOST_REQUIRE_EQUAL( success(), vote( N(carl), { N(producer) } ) );
 
@@ -2843,7 +2850,7 @@ BOOST_FIXTURE_TEST_CASE( multiple_namebids, eosio_system_tester ) try {
                             fc::exception, fc_assert_exception_message_is( not_closed_message ) );
 
    // stake enough to go above the 15% threshold
-   stake_with_transfer( config::system_account_name, "alice", STRSYM( "10000000.0000" ), STRSYM( "10000000.0000" ), STRSYM("1000.0000") );
+   stake_with_transfer( config::system_account_name, "alice", STRSYM( "10.0000" ), STRSYM( "10.0000" ), STRSYM("20000000.0000") );
    BOOST_REQUIRE_EQUAL(0, get_producer_info("producer")["unpaid_blocks"].as<uint32_t>());
    BOOST_REQUIRE_EQUAL( success(), vote( N(alice), { N(producer) } ) );
 
