@@ -959,7 +959,7 @@ BOOST_FIXTURE_TEST_CASE( producer_keep_votes, eosio_system_tester, * boost::unit
 
    //bob111111111 makes stake
    issue( "bob111111111", STRSYM("2000.0000"),  config::system_account_name );
-   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("13.0000"), STRSYM("0.5791"), STRSYM("1.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("10.0000"), STRSYM("10.0000"), STRSYM("13.5791") ) );
    REQUIRE_MATCHING_OBJECT( voter( "bob111111111", STRSYM("13.5791") ), get_voter_info( "bob111111111" ) );
 
    //bob111111111 votes for alice1111111
@@ -2386,8 +2386,6 @@ BOOST_FIXTURE_TEST_CASE(producer_onblock_check, eosio_system_tester) try {
    transfer(config::system_account_name, "producvotera", STRSYM("30000200.0000"));
    BOOST_REQUIRE_EQUAL(success(), stake("producvotera", STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("30000000.0000")));
    BOOST_REQUIRE_EQUAL(success(), vote("producvotera", { producer_names.front() }));
-
-    std::cout << get_global_state();
 
    // give a chance for everyone to produce blocks
    {
