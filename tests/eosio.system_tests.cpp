@@ -2637,8 +2637,8 @@ BOOST_FIXTURE_TEST_CASE( elect_producers /*_and_parameters*/, eosio_system_teste
    BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer3", 3) );
 
    //stake more than 15% of total EOS supply to activate chain
-   transfer( "eosio", "alice1111111", STRSYM("600000000.0000"), "eosio" );
-   BOOST_REQUIRE_EQUAL( success(), stake( "alice1111111", STRSYM("300000000.0000"), STRSYM("300000000.0000"), STRSYM("5000.0000") ) );
+   transfer( "eosio", "alice1111111", STRSYM("30000200.0000"), "eosio" );
+   BOOST_REQUIRE_EQUAL( success(), stake( "alice1111111", STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("30000000.0000") ) );
    //vote for producers
    BOOST_REQUIRE_EQUAL( success(), vote( N(alice1111111), { N(defproducer1) } ) );
    produce_blocks(250);
@@ -2651,9 +2651,9 @@ BOOST_FIXTURE_TEST_CASE( elect_producers /*_and_parameters*/, eosio_system_teste
    //REQUIRE_EQUAL_OBJECTS(prod1_config, config);
 
    // elect 2 producers
-   issue( "bob111111111", STRSYM("80000.0000"),  config::system_account_name );
+   issue( "bob111111111", STRSYM("80200.0000"),  config::system_account_name );
    ilog("stake");
-   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("40000.0000"), STRSYM("40000.0000"), STRSYM("5000.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), stake( "bob111111111", STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("80000.0000") ) );
    ilog("start vote");
    BOOST_REQUIRE_EQUAL( success(), vote( N(bob111111111), { N(defproducer2) } ) );
    ilog(".");
@@ -2667,7 +2667,9 @@ BOOST_FIXTURE_TEST_CASE( elect_producers /*_and_parameters*/, eosio_system_teste
    //REQUIRE_EQUAL_OBJECTS(prod2_config, config);
 
    // elect 3 producers
-   BOOST_REQUIRE_EQUAL( success(), vote( N(bob111111111), { N(defproducer2), N(defproducer3) } ) );
+   issue( N(defproducer3), STRSYM("80200.0000"),  config::system_account_name );
+   BOOST_REQUIRE_EQUAL( success(), stake( N(defproducer3), STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("80000.0000") ) );
+   BOOST_REQUIRE_EQUAL( success(), vote( N(defproducer3), { N(defproducer3) } ) );
    produce_blocks(250);
    producer_keys = control->head_block_state()->active_schedule.producers;
    BOOST_REQUIRE_EQUAL( 3, producer_keys.size() );
@@ -2677,11 +2679,11 @@ BOOST_FIXTURE_TEST_CASE( elect_producers /*_and_parameters*/, eosio_system_teste
    //config = config_to_variant( control->get_global_properties().configuration );
    //REQUIRE_EQUAL_OBJECTS(prod2_config, config);
 
-   // try to go back to 2 producers and fail
-   BOOST_REQUIRE_EQUAL( success(), vote( N(bob111111111), { N(defproducer3) } ) );
+   // try to go back to 2 producers
+   BOOST_REQUIRE_EQUAL( success(), vote( N(defproducer3), { } ) );
    produce_blocks(250);
    producer_keys = control->head_block_state()->active_schedule.producers;
-   BOOST_REQUIRE_EQUAL( 3, producer_keys.size() );
+   BOOST_REQUIRE_EQUAL( 2, producer_keys.size() );
 
    // The test below is invalid now, producer schedule is not updated if there are
    // fewer producers in the new schedule
