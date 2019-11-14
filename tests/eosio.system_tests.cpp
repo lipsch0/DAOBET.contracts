@@ -3384,7 +3384,7 @@ BOOST_FIXTURE_TEST_CASE( change_limited_account_back_to_unlimited, eosio_system_
 
    transfer( N(eosio), N(alice1111111), STRSYM("1.0000") );
 
-   auto error_msg = stake( N(alice1111111), N(eosio), STRSYM("0.0000"), STRSYM("1.0000"), STRSYM("1.0000") );
+   auto error_msg = stake( N(alice1111111), N(eosio), STRSYM("0.0000"), STRSYM("1.0000"), STRSYM("0.0000") );
    auto semicolon_pos = error_msg.find(';');
 
    BOOST_REQUIRE_EQUAL( error("account eosio has insufficient ram"),
@@ -3405,12 +3405,13 @@ BOOST_FIXTURE_TEST_CASE( change_limited_account_back_to_unlimited, eosio_system_
                                           ("cpu_weight", -1)
               );
 
-   stake( N(alice1111111), N(eosio), STRSYM("0.0000"), STRSYM("1.0000"), STRSYM("1.0000") );
+   stake( N(alice1111111), N(eosio), STRSYM("0.0000"), STRSYM("1.0000"), STRSYM("0.0000") );
 
    REQUIRE_MATCHING_OBJECT( get_total_stake( "eosio" ), mvo()
       ("owner", "eosio")
       ("net_weight", STRSYM("0.0000"))
       ("cpu_weight", STRSYM("1.0000"))
+      ("vote_weight", STRSYM("0.0000"))
       ("ram_bytes",  0)
    );
 
@@ -3443,7 +3444,6 @@ BOOST_FIXTURE_TEST_CASE( change_limited_account_back_to_unlimited, eosio_system_
                         push_action( N(eosio), N(setacctcpu), mvo()
                            ("account", "eosio")
                            ("cpu_weight", -1)
-
                         )
    );
 
