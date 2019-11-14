@@ -167,7 +167,7 @@ public:
                                             ("receiver", a)
                                             ("stake_net_quantity", STRSYM("10.0000") )
                                             ("stake_cpu_quantity", STRSYM("10.0000") )
-                                            ("stake_vote_quantity", STRSYM("10.0000"))
+                                            ("stake_vote_quantity", STRSYM("0.0000"))
                                             ("transfer", 0 )
                                           )
                                 );
@@ -581,7 +581,7 @@ public:
                                                ("receiver", "producer1111")
                                                ("stake_net_quantity", STRSYM("0.0000") )
                                                ("stake_cpu_quantity", STRSYM("0.0000") )
-                                               ("stake_vote_quantity", STRSYM("25090625.0000"))
+                                               ("stake_vote_quantity", STRSYM("25090624.0000"))
                                                ("transfer", 1 )
                                              )
                                  );
@@ -600,7 +600,7 @@ public:
                                                ("receiver", "producer1111")
                                                ("unstake_net_quantity", STRSYM("0.0000") )
                                                ("unstake_cpu_quantity", STRSYM("0.0000") )
-                                               ("unstake_vote_quantity", STRSYM("25090625.0000"))
+                                               ("unstake_vote_quantity", STRSYM("25090624.0000"))
                                              )
                                  );
 
