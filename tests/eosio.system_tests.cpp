@@ -118,7 +118,7 @@ BOOST_FIXTURE_TEST_CASE( buysell, eosio_system_tester ) try {
 
    BOOST_REQUIRE_EQUAL( success(), sellram( "alice1111111", bought_bytes ) );
 
-   BOOST_REQUIRE_EQUAL( STRSYM("99396507.4158"), get_balance( "alice1111111" ) );
+   BOOST_REQUIRE_EQUAL( STRSYM("99396507.4162"), get_balance( "alice1111111" ) );
 
 } FC_LOG_AND_RETHROW()
 
