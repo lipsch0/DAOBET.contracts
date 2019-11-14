@@ -1254,8 +1254,6 @@ BOOST_FIXTURE_TEST_CASE(producer_pay, eosio_system_tester, * boost::unit_test::t
 
       auto minted = supply.get_amount() - initial_supply.get_amount();
 
-    std::cout << dao;
-
       BOOST_REQUIRE_EQUAL(int64_t( ( initial_supply.get_amount() * double(secs_between_fills) * continuous_rate ) / secs_per_year ),
                           supply.get_amount() - initial_supply.get_amount());
       BOOST_REQUIRE_EQUAL(int64_t( ( initial_supply.get_amount() * double(secs_between_fills) * (continuous_rate * 1 / 5.) / secs_per_year ) ),
@@ -1347,8 +1345,7 @@ BOOST_FIXTURE_TEST_CASE(producer_pay, eosio_system_tester, * boost::unit_test::t
       int64_t to_pervote_bucket  = to_producer - to_perblock_bucket;
 
       if (to_pervote_bucket + initial_pervote_bucket >= 100 * 10000) {
-         BOOST_REQUIRE_EQUAL(to_producer + initial_pervote_bucket, balance.get_amount() - initial_balance.get_amount());
-         BOOST_REQUIRE_EQUAL(0, pervote_bucket);
+         BOOST_REQUIRE_EQUAL(to_producer + initial_pervote_bucket - pervote_bucket, balance.get_amount() - initial_balance.get_amount());
       } else {
          BOOST_REQUIRE_EQUAL(to_perblock_bucket, balance.get_amount() - initial_balance.get_amount());
          BOOST_REQUIRE_EQUAL(to_pervote_bucket + initial_pervote_bucket, pervote_bucket);
