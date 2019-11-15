@@ -40,7 +40,8 @@ function test(){
     -v `pwd`:/haya/contracts \
     -w /haya/contracts \
     -ti mixbytes/haya:devel-patched-cdt \
-    /haya/contracts/build/tests/unit_test
+    /haya/contracts/build/tests/unit_test $@
 }
 
-$JOB
+shift
+$JOB $@

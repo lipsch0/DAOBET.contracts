@@ -42,6 +42,7 @@ public:
 
       create_accounts({
          N(dao),
+         N(eosio.saving),
          N(eosio.bpay),
          N(eosio.names),
          N(eosio.ram),
@@ -166,8 +167,8 @@ public:
                                             ("receiver", a)
                                             ("stake_net_quantity", STRSYM("10.0000") )
                                             ("stake_cpu_quantity", STRSYM("10.0000") )
-                                            ("stake_vote_quantity", STRSYM("10.0000"))
-                                            ("transfer", 0 )
+                                            ("stake_vote_quantity", STRSYM("0.0000"))
+                                            ("transfer", false )
                                           )
                                 );
 
@@ -182,7 +183,8 @@ public:
                                                         bool multisig,
                                                         asset net = STRSYM("10.0000"),
                                                         asset cpu = STRSYM("10.0000"),
-                                                        asset vote = STRSYM("10.0000") ) {
+                                                        asset vote = STRSYM("0.0000"),
+                                                        bool transfer = false) {
       signed_transaction trx;
       set_transaction_headers(trx);
 
@@ -216,7 +218,7 @@ public:
                                             ("stake_net_quantity", net )
                                             ("stake_cpu_quantity", cpu )
                                             ("stake_vote_quantity", vote)
-                                            ("transfer", 0 )
+                                            ("transfer", transfer ? true : false )
                                           )
                                 );
 
@@ -260,7 +262,7 @@ public:
                                                ("stake_net_quantity", net)
                                                ("stake_cpu_quantity", cpu)
                                                ("stake_vote_quantity", vote)
-                                               ("transfer", 0)
+                                               ("transfer", false)
                                                )
                                    );
       }
@@ -307,7 +309,7 @@ public:
                           ("stake_net_quantity", net)
                           ("stake_cpu_quantity", cpu)
                           ("stake_vote_quantity", vote)
-                          ("transfer", 0 )
+                          ("transfer", false )
       );
    }
 
@@ -389,12 +391,12 @@ public:
                          ("producers", producers));
    }
 
-   asset get_balance( const account_name& act, symbol balance_symbol = symbol{CORE_SYM} ) {
+   asset get_balance( const account_name& act, symbol balance_symbol = symbol{CORE_SYM} ) const {
       vector<char> data = get_row_by_account( N(eosio.token), act, N(accounts), balance_symbol.to_symbol_code().value );
       return data.empty() ? asset(0, balance_symbol) : token_abi_ser.binary_to_variant("account", data, abi_serializer_max_time)["balance"].as<asset>();
    }
 
-   fc::variant get_total_stake( const account_name& act ) {
+   fc::variant get_total_stake( const account_name& act ) const {
       vector<char> data = get_row_by_account( config::system_account_name, act, N(userres), act );
       return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "user_resources", data, abi_serializer_max_time );
    }
@@ -412,6 +414,32 @@ public:
    fc::variant get_producer_info2( const account_name& act ) {
       vector<char> data = get_row_by_account( config::system_account_name, config::system_account_name, N(producers2), act );
       return abi_ser.binary_to_variant( "producer_info2", data, abi_serializer_max_time );
+   }
+
+   fc::variant get_name_bid( const account_name& act ) const {
+      vector<char> data = get_row_by_account( config::system_account_name, act, N(namebids), act );
+      return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "name_bid_table", data, abi_serializer_max_time );
+   }
+
+   void debug_name_bids( const std::vector<account_name>& accounts ) const {
+      for (const auto& a : accounts) {
+         std::stringstream bid;
+         bid << get_name_bid(a);
+
+         BOOST_TEST_MESSAGE("name bid for " << a.to_string() << ": " << bid.str());
+      }
+   }
+
+   void debug_balances( const std::vector<account_name>& accounts ) const {
+      for (const auto& a : accounts) {
+         //TODO: WTF "error: no member named 'to_string' in 'fc::variant'"???!!!
+         std::stringstream stake;
+         stake << get_total_stake(a);
+
+         BOOST_TEST_MESSAGE(a.to_string()
+            << ": balance: " << get_balance(a)
+            << ", user_resources: " << stake.str());
+      }
    }
 
    void create_currency( const name& contract, const name& manager, const asset& maxsupply ) {
@@ -508,7 +536,7 @@ public:
 
    vector<name> active_and_vote_producers() {
       //stake more than 15% of total EOS supply to activate chain
-      transfer( "eosio", "alice1111111", STRSYM("75090624.0000"), "eosio" );
+      transfer( "eosio", "alice1111111", STRSYM("75271872.0000"), "eosio" );
       BOOST_REQUIRE_EQUAL( success(), stake( "alice1111111", STRSYM("25090624.0000"), STRSYM("25090624.0000"), STRSYM("25090624.0000") ) );
 
       // create accounts {defproducera, defproducerb, ..., defproducerz} and register as producers
@@ -539,19 +567,24 @@ public:
       );
       BOOST_REQUIRE_EQUAL(transaction_receipt::executed, trace_auth->receipt->status);
 
-      //vote for producers
-      {
-         transfer( config::system_account_name, "alice1111111", STRSYM("10000000.0000"), config::system_account_name );
-         BOOST_REQUIRE_EQUAL(success(), stake( "alice1111111", STRSYM("3000000.0000"), STRSYM("3000000.0000"), STRSYM("3000000.0000") ) );
-         BOOST_REQUIRE_EQUAL(success(), buyram( "alice1111111", "alice1111111", STRSYM("3000000.0000") ) );
-         BOOST_REQUIRE_EQUAL(success(), push_action(N(alice1111111), N(voteproducer), mvo()
-                                                    ("voter",  "alice1111111")
+      const std::string voter_root("producvoter");
+      auto voter_balance = STRSYM("2860000.0000");
+      auto vote_stake = STRSYM("1430000.0000");
+      auto ram_stake = STRSYM("1430000.0000");
+      for (auto i = 0; i < 21; ++i) {
+         auto voter = account_name(std::string(voter_root + (char)('a' + i)));
+         create_account_with_resources(voter, config::system_account_name);
+         transfer(config::system_account_name, voter, voter_balance, config::system_account_name);
+         BOOST_REQUIRE_EQUAL(success(), stake( voter, STRSYM("0.0000"), STRSYM("0.0000"), vote_stake) );
+         BOOST_REQUIRE_EQUAL(success(), buyram( voter, voter, ram_stake ) );
+         BOOST_REQUIRE_EQUAL(success(), push_action(voter, N(voteproducer), mvo()
+                                                    ("voter",  voter)
                                                     ("proxy", name(0).to_string())
-                                                    ("producers", vector<account_name>(producer_names.begin(), producer_names.begin()+21))
+                                                    ("producers", vector<account_name>{ producer_names[i] })
                              )
          );
       }
-      produce_blocks( 250 );
+      produce_blocks( 700 );
 
       auto producer_keys = control->head_block_state()->active_schedule.producers;
       BOOST_REQUIRE_EQUAL( 21, producer_keys.size() );
@@ -572,10 +605,10 @@ public:
                                                mvo()
                                                ("from", name{config::system_account_name})
                                                ("receiver", "producer1111")
-                                               ("stake_net_quantity", STRSYM("25090624.0000") )
+                                               ("stake_net_quantity", STRSYM("0.0000") )
                                                ("stake_cpu_quantity", STRSYM("0.0000") )
-                                               ("stake_vote_quantity", STRSYM("0.0000"))
-                                               ("transfer", 1 )
+                                               ("stake_vote_quantity", STRSYM("25090625.0000"))
+                                               ("transfer", true )
                                              )
                                  );
          trx.actions.emplace_back( get_action( config::system_account_name, N(voteproducer),
@@ -591,9 +624,9 @@ public:
                                                mvo()
                                                ("from", "producer1111")
                                                ("receiver", "producer1111")
-                                               ("unstake_net_quantity", STRSYM("25090624.0000") )
+                                               ("unstake_net_quantity", STRSYM("0.0000") )
                                                ("unstake_cpu_quantity", STRSYM("0.0000") )
-                                               ("unstake_vote_quantity", STRSYM("0.0000"))
+                                               ("unstake_vote_quantity", STRSYM("25090625.0000"))
                                              )
                                  );
 

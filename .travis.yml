@@ -9,8 +9,10 @@ jobs:
   include:
     - stage: build
       script:
+        - set -e
         - rm -rf build
         - ./cicd/run build
+        - ./cicd/run test
         - ./cicd/run pack
 
 deploy:
