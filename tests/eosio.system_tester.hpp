@@ -593,7 +593,8 @@ public:
       return producer_names;
    }
 
-   void cross_15_percent_threshold() {
+   asset cross_15_percent_threshold() {
+      const asset vote_15_percent = STRSYM("25090625.0000");
       setup_producer_accounts({N(producer1111)});
       regproducer(N(producer1111));
       {
@@ -605,12 +606,10 @@ public:
                                                mvo()
                                                ("from", name{config::system_account_name})
                                                ("receiver", "producer1111")
-                                               ("stake_net_quantity", STRSYM("0.0000") )
-                                               ("stake_cpu_quantity", STRSYM("0.0000") )
-                                               ("stake_vote_quantity", STRSYM("25090625.0000"))
-                                               ("transfer", true )
-                                             )
-                                 );
+                                               ("stake_net_quantity", STRSYM("0.0000"))
+                                               ("stake_cpu_quantity", STRSYM("0.0000"))
+                                               ("stake_vote_quantity", vote_15_percent)
+                                               ("transfer", true) ) );
          trx.actions.emplace_back( get_action( config::system_account_name, N(voteproducer),
                                                vector<permission_level>{{N(producer1111), config::active_name}},
                                                mvo()
@@ -624,11 +623,9 @@ public:
                                                mvo()
                                                ("from", "producer1111")
                                                ("receiver", "producer1111")
-                                               ("unstake_net_quantity", STRSYM("0.0000") )
-                                               ("unstake_cpu_quantity", STRSYM("0.0000") )
-                                               ("unstake_vote_quantity", STRSYM("25090625.0000"))
-                                             )
-                                 );
+                                               ("unstake_net_quantity", STRSYM("0.0000"))
+                                               ("unstake_cpu_quantity", STRSYM("0.0000"))
+                                               ("unstake_vote_quantity", vote_15_percent) ) );
 
          set_transaction_headers(trx);
          trx.sign( get_private_key( config::system_account_name, "active" ), control->get_chain_id()  );
@@ -636,6 +633,7 @@ public:
          push_transaction( trx );
          produce_block();
       }
+      return vote_15_percent;
    }
 
    abi_serializer abi_ser;
