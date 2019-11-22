@@ -2365,7 +2365,7 @@ BOOST_FIXTURE_TEST_CASE(producer_onblock_check, eosio_system_tester) try {
    }
    setup_producer_accounts(producer_names);
 
-   for (auto a:producer_names) {
+   for (const auto& a : producer_names) {
       regproducer(a);
    }
 
@@ -2377,7 +2377,7 @@ BOOST_FIXTURE_TEST_CASE(producer_onblock_check, eosio_system_tester) try {
    BOOST_CHECK_EQUAL( wasm_assert_msg( "cannot undelegate bandwidth until the chain is activated (at least 15% of all tokens participate in voting)" ),
                       unstake( "defproducera", STRSYM("50.0000"), STRSYM("50.0000"), STRSYM("1.0000") ) );
 
-   for (auto && p: producer_names) {
+   for (const auto& p : producer_names) {
       vote(p, { p });
    }
 
@@ -3553,6 +3553,53 @@ BOOST_FIXTURE_TEST_CASE( delegate_vote_to_herself, eosio_system_tester ) try {
                   , true
       )
    );
+} FC_LOG_AND_RETHROW()
+
+
+BOOST_FIXTURE_TEST_CASE( stake_total_vs_active, eosio_system_tester ) try {
+   const auto init_vote = cross_15_percent_threshold();
+
+   const auto a1 = N(account1);
+   const auto p1 = N(producer1);
+
+   const asset vote_a1_p1_1 = STRSYM("100.0000");
+   const asset vote_a1_p1_2 = STRSYM("200.0000");
+   const asset unvote_a1_p1 = STRSYM("220.0000");
+
+   create_account_with_resources(a1, config::system_account_name, STRSYM("1.0000"), false,
+                                 STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("0.0000"), true);
+   create_account_with_resources(p1, config::system_account_name, STRSYM("1.0000"), false,
+                                 STRSYM("10.0000"), STRSYM("10.0000"), STRSYM("0.0000"), true);
+
+   issue(a1, STRSYM("1000.0000"), config::system_account_name);
+   issue(p1, STRSYM("1000.0000"), config::system_account_name);
+
+   BOOST_TEST_REQUIRE( 0 == get_global_state()["active_stake"].as<int64_t>() );
+   BOOST_TEST_REQUIRE( init_vote.get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
+
+   regproducer(p1);
+
+   // stake
+   BOOST_TEST_REQUIRE( success() == stake(a1, STRSYM("10.0000"), STRSYM("10.0000"), vote_a1_p1_1) );
+   BOOST_TEST_REQUIRE( success() == vote(a1, {p1}) );
+
+   // active_stake == total_activated_stake
+   BOOST_TEST_REQUIRE( vote_a1_p1_1.get_amount() == get_global_state()["active_stake"].as<int64_t>() );
+   BOOST_TEST_REQUIRE( (init_vote + vote_a1_p1_1).get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
+
+   BOOST_TEST_REQUIRE( success() == stake(a1, STRSYM("20.0000"), STRSYM("20.0000"), vote_a1_p1_2) );
+   BOOST_TEST_REQUIRE( success() == vote(a1, {p1}) );
+
+   BOOST_TEST_MESSAGE("act: " << get_global_state()["active_stake"].as<int64_t>() << "; total: " << get_global_state()["total_activated_stake"].as<int64_t>());
+
+   BOOST_TEST_REQUIRE( (vote_a1_p1_1 + vote_a1_p1_2).get_amount() == get_global_state()["active_stake"].as<int64_t>() );
+   BOOST_TEST_REQUIRE( (init_vote + vote_a1_p1_1).get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
+
+   // unstake
+   BOOST_TEST_REQUIRE( success() == unstake(a1, STRSYM("1.0000"), STRSYM("1.0000"), unvote_a1_p1) );
+
+   BOOST_TEST_REQUIRE( (vote_a1_p1_1 + vote_a1_p1_2 - unvote_a1_p1).get_amount() == get_global_state()["active_stake"].as<int64_t>() );
+   BOOST_TEST_REQUIRE( (init_vote + vote_a1_p1_1).get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
 } FC_LOG_AND_RETHROW()
 
 BOOST_AUTO_TEST_SUITE_END()
