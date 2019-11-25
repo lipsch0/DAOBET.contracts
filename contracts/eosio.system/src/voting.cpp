@@ -85,7 +85,7 @@ namespace eosiosystem {
       });
    }
 
-   int get_target_amount(int activated_share) {
+   int32_t get_target_amount(int32_t activated_share) {
       if (activated_share <= 33) {
         return 21;
       } else if (activated_share > 33 && activated_share < 60) {
@@ -101,11 +101,11 @@ namespace eosiosystem {
 
       std::vector< std::pair<eosio::producer_key,uint16_t> > top_producers;
       const asset token_supply = eosio::token::get_supply(token_account, core_symbol().code() );
-      int activated_share = 100 * _gstate.active_stake / token_supply.amount;
-      int target_schedule_size = _gstate.target_producer_schedule_size;
+      int32_t activated_share = 100 * _gstate.active_stake / token_supply.amount;
+      int32_t target_schedule_size = _gstate.target_producer_schedule_size;
 
       if (block_time.slot - _gstate.last_target_schedule_size_update.slot >= 2 * _gstate.schedule_update_interval) {
-        int target_amount = get_target_amount(activated_share);
+        int32_t target_amount = get_target_amount(activated_share);
         if (target_amount > target_schedule_size) {
           target_schedule_size = target_schedule_size + _gstate.schedule_size_step;
         } else if (target_amount < target_schedule_size) {
@@ -242,12 +242,15 @@ namespace eosiosystem {
       check( voter != _voters.end(), "user must stake before they can vote" ); /// staking creates voter object
       check( !proxy || !voter->is_proxy, "account registered as a proxy is not allowed to use a proxy" );
 
-      /**
-       * The first time someone votes we calculate and set last_vote_weight, since they cannot unstake until
-       * after total_activated_stake hits threshold, we can use last_vote_weight to determine that this is
-       * their first vote and should consider their stake activated.
+       /*
+       * The first time someone votes we set has_voted flag
+       * and consider his stake activated.
        */
-      if( voter->last_vote_weight <= 0.0 ) {
+
+      if ( !voter->has_voted ) {
+         _voters.modify( voter, same_payer, [&]( auto& av ) {
+            av.has_voted = true;
+         });
          _gstate.total_activated_stake += voter->staked;
          if( _gstate.total_activated_stake >= min_activated_stake && _gstate.thresh_activated_stake_time == time_point() ) {
             _gstate.thresh_activated_stake_time = current_time_point();
