@@ -3709,4 +3709,34 @@ BOOST_FIXTURE_TEST_CASE( stake_active_revoke, eosio_system_tester ) try {
 
 } FC_LOG_AND_RETHROW()
 
+BOOST_FIXTURE_TEST_CASE( total_activated_stake_fix, eosio_system_tester ) try {
+   const auto init_vote = cross_15_percent_threshold();
+
+   const auto voter = N(voter);
+   const auto producer = N(producer);
+   const auto voter_staked = STRSYM("100.0000");
+
+   create_account_with_resources(voter, config::system_account_name, STRSYM("1.0000"), false,
+                                 STRSYM("1.0000"), STRSYM("1.0000"), STRSYM("0.0000"), true);
+   create_account_with_resources(producer, config::system_account_name, STRSYM("1.0000"), false,
+                                 STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("0.0000"), true);
+   issue(voter, voter_staked, config::system_account_name);
+   regproducer(producer);
+
+   // initial state
+   BOOST_TEST_REQUIRE( init_vote.get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
+
+   // stake
+   BOOST_TEST_REQUIRE( success() == stake(voter, STRSYM("0.0000"), STRSYM("0.0000"), voter_staked) );
+   BOOST_TEST_REQUIRE( success() == vote(voter, {producer}) );
+   auto total_activated_before = get_global_state()["total_activated_stake"].as<int64_t>();
+   BOOST_TEST_REQUIRE( init_vote.get_amount() + voter_staked.get_amount() == total_activated_before );
+
+   // unstake and stake again
+   BOOST_TEST_REQUIRE( success() == unstake(voter, STRSYM("0.0000"), STRSYM("0.0000"), voter_staked) );
+   BOOST_TEST_REQUIRE( total_activated_before == get_global_state()["total_activated_stake"].as<int64_t>() );
+   BOOST_TEST_REQUIRE( success() == stake(voter, STRSYM("0.0000"), STRSYM("0.0000"), voter_staked) );
+   BOOST_TEST_REQUIRE( total_activated_before == get_global_state()["total_activated_stake"].as<int64_t>() );
+} FC_LOG_AND_RETHROW()
+
 BOOST_AUTO_TEST_SUITE_END()
