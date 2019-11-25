@@ -85,7 +85,7 @@ namespace eosiosystem {
       });
    }
 
-   int get_target_amount(int activated_share) {
+   int32_t get_target_amount(int32_t activated_share) {
       if (activated_share <= 33) {
         return 21;
       } else if (activated_share > 33 && activated_share < 60) {
@@ -101,11 +101,11 @@ namespace eosiosystem {
 
       std::vector< std::pair<eosio::producer_key,uint16_t> > top_producers;
       const asset token_supply = eosio::token::get_supply(token_account, core_symbol().code() );
-      int activated_share = 100 * _gstate.active_stake / token_supply.amount;
-      int target_schedule_size = _gstate.target_producer_schedule_size;
+      int32_t activated_share = 100 * _gstate.active_stake / token_supply.amount;
+      int32_t target_schedule_size = _gstate.target_producer_schedule_size;
 
       if (block_time.slot - _gstate.last_target_schedule_size_update.slot >= 2 * _gstate.schedule_update_interval) {
-        int target_amount = get_target_amount(activated_share);
+        int32_t target_amount = get_target_amount(activated_share);
         if (target_amount > target_schedule_size) {
           target_schedule_size = target_schedule_size + _gstate.schedule_size_step;
         } else if (target_amount < target_schedule_size) {
