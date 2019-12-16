@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <typeinfo>
 
 //XXX: run tests with --log_level=message (or below) to see BOOST_TEST_MESSAGE output
 
@@ -1107,9 +1108,9 @@ BOOST_FIXTURE_TEST_CASE( proxy_actions_affect_producers, eosio_system_tester, * 
    cross_15_percent_threshold();
 
    create_accounts_with_resources( {  N(defproducer1), N(defproducer2), N(defproducer3) } );
-   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer1", 1) );
-   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer2", 2) );
-   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer3", 3) );
+   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer1" ) );
+   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer2" ) );
+   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer3" ) );
 
    //register as a proxy
    BOOST_REQUIRE_EQUAL( success(), push_action( N(alice1111111), N(regproxy), mvo()
@@ -1190,7 +1191,7 @@ BOOST_FIXTURE_TEST_CASE( token_emission, eosio_system_tester, * boost::unit_test
     cross_15_percent_threshold();
 
     create_accounts_with_resources( {  N(defproducer1) } );
-    BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer1", 1) );
+    BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer1") );
 
     transfer( config::system_account_name, "alice1111111", STRSYM("130000000.0000"), config::system_account_name );
     BOOST_REQUIRE_EQUAL( success(), stake( "alice1111111", "alice1111111", STRSYM("1.0000"), STRSYM("1.0000"), STRSYM("120000000.0000") ) );
@@ -2037,8 +2038,8 @@ BOOST_FIXTURE_TEST_CASE(votepay_share_invariant, eosio_system_tester, * boost::u
 //    REQUIRE_MATCHING_OBJECT( proxy( alice ), get_voter_info( alice ) );
 
 //    // carol and emily become producers
-//    BOOST_REQUIRE_EQUAL( success(), regproducer( carol, 1) );
-//    BOOST_REQUIRE_EQUAL( success(), regproducer( emily, 1) );
+//    BOOST_REQUIRE_EQUAL( success(), regproducer( carol ) );
+//    BOOST_REQUIRE_EQUAL( success(), regproducer( emily ) );
 
 //    // bob chooses alice as proxy
 //    BOOST_REQUIRE_EQUAL( success(), stake( bob, STRSYM("100.0002"), STRSYM("50.0001"), STRSYM("1.0000") ) );
@@ -2515,9 +2516,9 @@ BOOST_FIXTURE_TEST_CASE( voters_actions_affect_proxy_and_producers, eosio_system
    cross_15_percent_threshold();
 
    create_accounts_with_resources( { N(donald111111), N(defproducer1), N(defproducer2), N(defproducer3) } );
-   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer1", 1) );
-   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer2", 2) );
-   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer3", 3) );
+   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer1" ) );
+   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer2" ) );
+   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer3" ) );
 
    //alice1111111 becomes a producer
    BOOST_REQUIRE_EQUAL( success(), push_action( N(alice1111111), N(regproxy), mvo()
@@ -2595,7 +2596,7 @@ BOOST_FIXTURE_TEST_CASE( vote_both_proxy_and_producers, eosio_system_tester ) tr
    REQUIRE_MATCHING_OBJECT( proxy( "alice1111111" ), get_voter_info( "alice1111111" ) );
 
    //carol1111111 becomes a producer
-   BOOST_REQUIRE_EQUAL( success(), regproducer( "carol1111111", 1) );
+   BOOST_REQUIRE_EQUAL( success(), regproducer( "carol1111111" ) );
 
    //bob111111111 chooses alice1111111 as a proxy
 
@@ -2730,9 +2731,9 @@ fc::mutable_variant_object config_to_variant( const eosio::chain::chain_config& 
 
 BOOST_FIXTURE_TEST_CASE( elect_producers /*_and_parameters*/, eosio_system_tester ) try {
    create_accounts_with_resources( {  N(defproducer1), N(defproducer2), N(defproducer3) } );
-   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer1", 1) );
-   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer2", 2) );
-   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer3", 3) );
+   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer1" ) );
+   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer2" ) );
+   BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer3" ) );
 
    //stake more than 15% of total EOS supply to activate chain
    transfer( "eosio", "alice1111111", STRSYM("30000200.0000"), "eosio" );
@@ -3665,6 +3666,7 @@ BOOST_FIXTURE_TEST_CASE( stake_total_vs_active, eosio_system_tester ) try {
    BOOST_TEST_REQUIRE( (init_vote + vote_a1_p1_1).get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
 } FC_LOG_AND_RETHROW()
 
+
 BOOST_FIXTURE_TEST_CASE( stake_active_revoke, eosio_system_tester ) try {
    cross_15_percent_threshold();
 
@@ -3709,6 +3711,7 @@ BOOST_FIXTURE_TEST_CASE( stake_active_revoke, eosio_system_tester ) try {
 
 } FC_LOG_AND_RETHROW()
 
+
 BOOST_FIXTURE_TEST_CASE( total_activated_stake_fix, eosio_system_tester ) try {
    const auto init_vote = cross_15_percent_threshold();
 
@@ -3737,6 +3740,48 @@ BOOST_FIXTURE_TEST_CASE( total_activated_stake_fix, eosio_system_tester ) try {
    BOOST_TEST_REQUIRE( total_activated_before == get_global_state()["total_activated_stake"].as<int64_t>() );
    BOOST_TEST_REQUIRE( success() == stake(voter, STRSYM("0.0000"), STRSYM("0.0000"), voter_staked) );
    BOOST_TEST_REQUIRE( total_activated_before == get_global_state()["total_activated_stake"].as<int64_t>() );
+
+} FC_LOG_AND_RETHROW()
+
+
+BOOST_FIXTURE_TEST_CASE( stake_validators_correlation, eosio_system_tester ) try {
+   BOOST_TEST_MESSAGE("state: " << variant_to_string(get_global_state()));
+   //BOOST_TEST_MESSAGE("state: " << get_global_state()); // TODO: make it working
+
+   const unsigned nproducers = 150;
+   const unsigned mix_active_producers = 21;
+   const unsigned max_active_producers = 102; // maximum number of active producers
+   const unsigned max_schedule_update_delta = 3; // contract allows to add/remove maximum 3 producers per 24 hours
+
+   const auto producers = generate_names(nproducers);
+   const asset vote_stake{get_token_supply().get_amount() / (nproducers+10), symbol(4,CORE_SYM_NAME)};
+   BOOST_TEST_MESSAGE("vote stake used for each BP: " << vote_stake.to_string());
+
+   for (const auto& p : producers) {
+      create_account_with_resources(p, config::system_account_name, STRSYM("1.0000"), false,
+                                    STRSYM("100.0000"), STRSYM("100.0000"), vote_stake, true);
+      regproducer(p);
+      vote(p, {p});
+
+      BOOST_TEST_MESSAGE("active stake = " << get_global_state()["active_stake"].as<int64_t>());
+   }
+   BOOST_TEST_MESSAGE("registered producers: " <<
+      bal::join(producers | bad::transformed([](const auto& e){ return e.to_string(); }), " "));
+   BOOST_TEST_MESSAGE("state: " << variant_to_string(get_global_state()));
+   BOOST_TEST_MESSAGE("active stake = " << get_global_state()["active_stake"].as<int64_t>() <<
+                      "; total stake = " << get_token_supply().to_string());
+
+   BOOST_TEST_MESSAGE("-----------------------------------------");
+
+   for (int i = 0; i < max_active_producers/max_schedule_update_delta + 1; i++) {
+      produce_block(fc::hours(24));
+      produce_blocks(666);
+      BOOST_TEST_MESSAGE("Head block producers size: " << control->active_producers().producers.size());
+   }
+   BOOST_TEST_REQUIRE( 102 == control->active_producers().producers.size() );
+
+   //TODO: check other variants (21 BP, etc.)
+
 } FC_LOG_AND_RETHROW()
 
 BOOST_AUTO_TEST_SUITE_END()
