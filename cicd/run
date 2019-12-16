@@ -1,47 +1,16 @@
-#!/usr/bin/env bash
-set -e
+#!/bin/bash
 
-JOB=$1
+set -eux
 
-# build
-function build(){
-  docker run \
-    --rm \
-    -v `pwd`:/haya/contracts \
-    -w /haya/contracts \
-    -ti mixbytes/haya:devel-patched-cdt \
-    ./cicd/build.sh
-}
+RUN_NODE_WITH_CDT_CMD="docker run --rm -v "$PWD":/daobet.contracts -w /daobet.contracts -ti daobot/daobet:node-with-cdt"
 
-# pack
-function pack(){
-  docker run \
-    --rm \
-    -v `pwd`:/haya/contracts \
-    -w /haya/contracts \
-    -ti mixbytes/haya:devel-patched-cdt \
-    ./cicd/pack.sh
-}
-
-# login
-function login(){
-  docker run \
-    --rm \
-    -v `pwd`:/haya/contracts \
-    -w /haya/contracts \
-    -ti mixbytes/haya:devel-patched-cdt \
-    bash
-}
-
-function test(){
-# test
-  docker run \
-    --rm \
-    -v `pwd`:/haya/contracts \
-    -w /haya/contracts \
-    -ti mixbytes/haya:devel-patched-cdt \
-    /haya/contracts/build/tests/unit_test $@
-}
-
+cmd="${1:?}"
 shift
-$JOB $@
+
+case "$cmd" in
+(build) eval "$RUN_NODE_WITH_CDT_CMD" ./cicd/build.sh ;;
+(test)  eval "$RUN_NODE_WITH_CDT_CMD" ./build/tests/unit_test "$@" ;;
+(pack)  eval "$RUN_NODE_WITH_CDT_CMD" ./cicd/pack.sh ;;
+(login) eval "$RUN_NODE_WITH_CDT_CMD" bash ;;
+(*)     echo >&2 "Invalid command: $cmd." ; exit 1 ;;
+esac

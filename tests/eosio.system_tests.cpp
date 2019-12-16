@@ -1191,7 +1191,7 @@ BOOST_FIXTURE_TEST_CASE( token_emission, eosio_system_tester, * boost::unit_test
     cross_15_percent_threshold();
 
     create_accounts_with_resources( {  N(defproducer1) } );
-    BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer1", 1) );
+    BOOST_REQUIRE_EQUAL( success(), regproducer( "defproducer1") );
 
     transfer( config::system_account_name, "alice1111111", STRSYM("130000000.0000"), config::system_account_name );
     BOOST_REQUIRE_EQUAL( success(), stake( "alice1111111", "alice1111111", STRSYM("1.0000"), STRSYM("1.0000"), STRSYM("120000000.0000") ) );
