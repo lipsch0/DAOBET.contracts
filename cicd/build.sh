@@ -41,6 +41,6 @@ pushd "$build_dir"
     -DBOOST_ROOT="$boost_root" \
     -DBoost_NO_SYSTEM_PATHS=on \
     ..
-  make VERBOSE=1 -j"$ncores"
+  make -j"$ncores"
   set +x
 popd

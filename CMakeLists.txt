@@ -63,8 +63,8 @@ else() # INVALID OR MISMATCH
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-   set(TEST_BUILD_TYPE "Debug")
-   set(CMAKE_BUILD_TYPE "Release")
+  set(TEST_BUILD_TYPE "Debug")
+  set(CMAKE_BUILD_TYPE "Release")
 else()
   set(TEST_BUILD_TYPE ${CMAKE_BUILD_TYPE})
 endif()
