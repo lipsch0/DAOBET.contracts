@@ -547,6 +547,21 @@ public:
       return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "refund_request", data, abi_serializer_max_time );
    }
 
+#ifndef NDEBUG
+   fc::variant get_dlogs() const {
+      vector<char> data = get_row_by_account( config::system_account_name, config::system_account_name, N(dlogs), N(dlogs) );
+      return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "dlogs", data, abi_serializer_max_time );
+   }
+
+   void print_debug_logs() const {
+      std::string dlog;
+      for (const auto& log : get_dlogs()["data"].as<std::vector<std::string>>()) {
+         dlog += "  " + log + "\n";
+      }
+      BOOST_TEST_MESSAGE("debug log:\n" + dlog);
+   }
+#endif // NDEBUG
+
    abi_serializer initialize_multisig() {
       abi_serializer msig_abi_ser;
       {

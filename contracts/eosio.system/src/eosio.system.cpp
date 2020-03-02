@@ -12,20 +12,26 @@ namespace eosiosystem {
    using eosio::token;
 
    system_contract::system_contract( name s, name code, datastream<const char*> ds )
-   :native(s,code,ds),
-    _voters(get_self(), get_self().value),
-    _producers(get_self(), get_self().value),
-    _producers2(get_self(), get_self().value),
-    _global(get_self(), get_self().value),
-    _global2(get_self(), get_self().value),
-    _global3(get_self(), get_self().value),
-    _rammarket(get_self(), get_self().value),
-    _contracts_version(get_self(), get_self().value)
+      : native(s,code,ds)
+      , _voters(get_self(), get_self().value)
+      , _producers(get_self(), get_self().value)
+      , _producers2(get_self(), get_self().value)
+      , _global(get_self(), get_self().value)
+      , _global2(get_self(), get_self().value)
+      , _global3(get_self(), get_self().value)
+      , _rammarket(get_self(), get_self().value)
+      , _contracts_version(get_self(), get_self().value)
+#ifndef NDEBUG
+      , _dlogs_singleton(get_self(), get_self().value)
+#endif
    {
       _gstate  = _global.exists() ? _global.get() : get_default_parameters();
       _gstate2 = _global2.exists() ? _global2.get() : eosio_global_state2{};
       _gstate3 = _global3.exists() ? _global3.get() : eosio_global_state3{};
       _contracts_version.set(version_info{CONTRACTS_VERSION}, get_self());
+#ifndef NDEBUG
+      _dlogs = _dlogs_singleton.exists() ? _dlogs_singleton.get() : dlogs{};
+#endif
    }
 
    eosio_global_state system_contract::get_default_parameters() {
@@ -43,6 +49,9 @@ namespace eosiosystem {
       _global.set( _gstate, get_self() );
       _global2.set( _gstate2, get_self() );
       _global3.set( _gstate3, get_self() );
+#ifndef NDEBUG
+      _dlogs_singleton.set(_dlogs, get_self());
+#endif
    }
 
    void system_contract::setram( uint64_t max_ram_size ) {

@@ -2937,6 +2937,10 @@ BOOST_FIXTURE_TEST_CASE( buyname, eosio_system_tester ) try {
    BOOST_TEST_MESSAGE("After 1 day + 1 block auction should be closed for nofail:");
    debug_name_bids({ N(eosio), N(sam), N(dan), N(nofail) });
 
+#ifndef NDEBUG
+   print_debug_logs();
+#endif
+
    BOOST_REQUIRE_EXCEPTION( create_account_with_resources(N(nofail), N(dan)), // dan shoudn't be able to do this, sam won
                             eosio_assert_message_exception, eosio_assert_message_is("only highest bidder can claim") );
    BOOST_TEST_MESSAGE("verify sam can create nofail");
@@ -3778,6 +3782,10 @@ BOOST_FIXTURE_TEST_CASE( stake_total_vs_active, eosio_system_tester ) try {
    // active_stake == total_activated_stake
    BOOST_TEST_REQUIRE( vote_a1_p1_1.get_amount() == get_global_state()["active_stake"].as<int64_t>() );
 
+#ifndef NDEBUG
+   print_debug_logs();
+#endif
+
    // total_activated_stake should not change after setting thresh_activated_stake_time
    BOOST_TEST_REQUIRE( init_vote.get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
 
@@ -3844,11 +3852,16 @@ BOOST_FIXTURE_TEST_CASE( stake_active_revoke, eosio_system_tester ) try {
 
 
 BOOST_FIXTURE_TEST_CASE( total_activated_stake_fix, eosio_system_tester ) try {
+   // check, that total_activated_stake is not unfluenced by unstaking & voting again
    const auto init_vote = cross_15_percent_threshold();
 
    const auto voter = N(voter);
    const auto producer = N(producer);
    const auto voter_staked = STRSYM("100.0000");
+
+#ifndef NDEBUG
+   print_debug_logs();
+#endif
 
    create_account_with_resources(voter, config::system_account_name, STRSYM("1.0000"), false,
                                  STRSYM("1.0000"), STRSYM("1.0000"), STRSYM("0.0000"), true);

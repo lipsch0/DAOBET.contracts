@@ -15,6 +15,15 @@
 #include <string>
 #include <type_traits>
 
+// run cicd/build.sh with `--build-type Debug` option to enable enhanced logging
+#ifndef NDEBUG
+
+# define ADD_DEBUG_LOG_MSG(msg) do { \
+   _dlogs.data.push_back(std::string(__func__) + ":" + std::to_string(__LINE__) + ": " + (msg)); \
+} while (0);
+
+#endif // NDEBUG
+
 
 namespace eosiosystem {
 
@@ -314,6 +323,17 @@ namespace eosiosystem {
    typedef eosio::multi_index< "delband"_n, delegated_bandwidth > del_bandwidth_table;
    typedef eosio::multi_index< "refunds"_n, refund_request >      refunds_table;
 
+
+#ifndef NDEBUG
+   // some actions (like onblock()) do not allow to print anything, so we use this table for debugging
+   struct [[eosio::table, eosio::contract("eosio.system")]] dlogs {
+      std::vector<std::string> data; // array of log messages
+
+      EOSLIB_SERIALIZE( dlogs, (data) );
+   };
+   typedef eosio::singleton< "dlogs"_n, dlogs > dlogs_singleton;
+#endif // NDEBUG
+
    /**
     * The EOSIO system contract. The EOSIO system contract governs ram market, voters, producers, global state.
     */
@@ -331,6 +351,10 @@ namespace eosiosystem {
          eosio_global_state3         _gstate3;
          rammarket                   _rammarket;
          contracts_version_singleton _contracts_version;
+#ifndef NDEBUG
+         dlogs                       _dlogs;
+         dlogs_singleton             _dlogs_singleton;
+#endif // NDEBUG
 
       public:
          static constexpr eosio::name active_permission{"active"_n};

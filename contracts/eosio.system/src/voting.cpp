@@ -234,6 +234,9 @@ namespace eosiosystem {
          if( _gstate.total_activated_stake >= min_activated_stake ) {
             _gstate.thresh_activated_stake_time = current_time_point();
          }
+#ifndef NDEBUG
+         ADD_DEBUG_LOG_MSG("_gstate.thresh_activated_stake_time = " + std::to_string(_gstate.thresh_activated_stake_time.sec_since_epoch()));
+#endif
       }
 
       auto new_vote_weight = stake2vote( voter->staked );
