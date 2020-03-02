@@ -237,7 +237,7 @@ namespace eosiosystem {
          cpu_managed = 4
       };
 
-      bool has_voted = false;
+      bool has_voted = false; // unused since merging with eosio.contracts-1.8.3
 
       // explicit serialization macro is not necessary, used here only to improve compilation time
       EOSLIB_SERIALIZE( voter_info, (owner)(proxy)(producers)(staked)(last_vote_weight)(proxied_vote_weight)(is_proxy)(flags1)(reserved2)(reserved3)(has_voted) )

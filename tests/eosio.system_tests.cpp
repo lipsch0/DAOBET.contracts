@@ -2940,6 +2940,7 @@ BOOST_FIXTURE_TEST_CASE( buyname, eosio_system_tester ) try {
 #ifndef NDEBUG
    print_debug_logs();
 #endif
+   BOOST_REQUIRE_LT(get_name_bid(N(nofail))["high_bid"].as<int64_t>(), 0);
 
    BOOST_REQUIRE_EXCEPTION( create_account_with_resources(N(nofail), N(dan)), // dan shoudn't be able to do this, sam won
                             eosio_assert_message_exception, eosio_assert_message_is("only highest bidder can claim") );
@@ -3876,14 +3877,13 @@ BOOST_FIXTURE_TEST_CASE( total_activated_stake_fix, eosio_system_tester ) try {
    // stake
    BOOST_TEST_REQUIRE( success() == stake(voter, STRSYM("0.0000"), STRSYM("0.0000"), voter_staked) );
    BOOST_TEST_REQUIRE( success() == vote(voter, {producer}) );
-   auto total_activated_before = get_global_state()["total_activated_stake"].as<int64_t>();
-   BOOST_TEST_REQUIRE( init_vote.get_amount() + voter_staked.get_amount() == total_activated_before );
+   BOOST_TEST_REQUIRE( init_vote.get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
 
    // unstake and stake again
    BOOST_TEST_REQUIRE( success() == unstake(voter, STRSYM("0.0000"), STRSYM("0.0000"), voter_staked) );
-   BOOST_TEST_REQUIRE( total_activated_before == get_global_state()["total_activated_stake"].as<int64_t>() );
+   BOOST_TEST_REQUIRE( init_vote.get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
    BOOST_TEST_REQUIRE( success() == stake(voter, STRSYM("0.0000"), STRSYM("0.0000"), voter_staked) );
-   BOOST_TEST_REQUIRE( total_activated_before == get_global_state()["total_activated_stake"].as<int64_t>() );
+   BOOST_TEST_REQUIRE( init_vote.get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
 
 } FC_LOG_AND_RETHROW()
 
