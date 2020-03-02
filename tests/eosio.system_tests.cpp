@@ -2934,18 +2934,20 @@ BOOST_FIXTURE_TEST_CASE( buyname, eosio_system_tester ) try {
 
    produce_block(fc::days(1));
    produce_block();
+   BOOST_TEST_MESSAGE("After 1 day + 1 block auction should be closed for nofail:");
    debug_name_bids({ N(eosio), N(sam), N(dan), N(nofail) });
 
    BOOST_REQUIRE_EXCEPTION( create_account_with_resources(N(nofail), N(dan)), // dan shoudn't be able to do this, sam won
                             eosio_assert_message_exception, eosio_assert_message_is("only highest bidder can claim") );
-   //wlog("verify sam can create nofail");
+   BOOST_TEST_MESSAGE("verify sam can create nofail");
    debug_balances({N(sam), N(dan), N(nofail)});
 
    create_account_with_resources(N(nofail), N(sam)); // sam should be able to do this, he won the bid
-   //wlog("verify nofail can create test.nofail");
+
+   BOOST_TEST_MESSAGE("verify nofail can create test.nofail");
    transfer("eosio", "nofail", STRSYM("1000.0000"));
    create_account_with_resources( N(test.nofail), N(nofail) ); // only nofail can create test.nofail
-   //wlog("verify dan cannot create test.fail");
+   BOOST_TEST_MESSAGE("verify dan cannot create test.fail");
    BOOST_REQUIRE_EXCEPTION( create_account_with_resources(N(test.fail), N(dan)), // dan shouldn't be able to do this
                             eosio_assert_message_exception, eosio_assert_message_is("only suffix may create this account") );
 
@@ -3758,10 +3760,8 @@ BOOST_FIXTURE_TEST_CASE( stake_total_vs_active, eosio_system_tester ) try {
    const asset vote_a1_p1_2 = STRSYM("200.0000");
    const asset unvote_a1_p1 = STRSYM("220.0000");
 
-   create_account_with_resources(a1, config::system_account_name, STRSYM("1.0000"), false,
-                                 STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("0.0000"), true);
-   create_account_with_resources(p1, config::system_account_name, STRSYM("1.0000"), false,
-                                 STRSYM("10.0000"), STRSYM("10.0000"), STRSYM("0.0000"), true);
+   create_account_with_resources(a1, config::system_account_name, STRSYM("1.0000"), false, STRSYM("100.0000"), STRSYM("100.0000"), STRSYM("0.0000"), true);
+   create_account_with_resources(p1, config::system_account_name, STRSYM("1.0000"), false, STRSYM("10.0000"), STRSYM("10.0000"), STRSYM("0.0000"), true);
 
    issue_and_transfer(a1, STRSYM("1000.0000"), config::system_account_name);
    issue_and_transfer(p1, STRSYM("1000.0000"), config::system_account_name);
@@ -3777,7 +3777,10 @@ BOOST_FIXTURE_TEST_CASE( stake_total_vs_active, eosio_system_tester ) try {
 
    // active_stake == total_activated_stake
    BOOST_TEST_REQUIRE( vote_a1_p1_1.get_amount() == get_global_state()["active_stake"].as<int64_t>() );
-   BOOST_TEST_REQUIRE( (init_vote + vote_a1_p1_1).get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
+
+   // total_activated_stake should not change after setting thresh_activated_stake_time
+   BOOST_TEST_REQUIRE( init_vote.get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
+
 
    BOOST_TEST_REQUIRE( success() == stake(a1, STRSYM("20.0000"), STRSYM("20.0000"), vote_a1_p1_2) );
    BOOST_TEST_REQUIRE( success() == vote(a1, {p1}) );
@@ -3785,13 +3788,13 @@ BOOST_FIXTURE_TEST_CASE( stake_total_vs_active, eosio_system_tester ) try {
    BOOST_TEST_MESSAGE("act: " << get_global_state()["active_stake"].as<int64_t>() << "; total: " << get_global_state()["total_activated_stake"].as<int64_t>());
 
    BOOST_TEST_REQUIRE( (vote_a1_p1_1 + vote_a1_p1_2).get_amount() == get_global_state()["active_stake"].as<int64_t>() );
-   BOOST_TEST_REQUIRE( (init_vote + vote_a1_p1_1).get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
+   BOOST_TEST_REQUIRE( init_vote.get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
 
    // unstake
    BOOST_TEST_REQUIRE( success() == unstake(a1, STRSYM("1.0000"), STRSYM("1.0000"), unvote_a1_p1) );
 
    BOOST_TEST_REQUIRE( (vote_a1_p1_1 + vote_a1_p1_2 - unvote_a1_p1).get_amount() == get_global_state()["active_stake"].as<int64_t>() );
-   BOOST_TEST_REQUIRE( (init_vote + vote_a1_p1_1).get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
+   BOOST_TEST_REQUIRE( init_vote.get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
 } FC_LOG_AND_RETHROW()
 
 

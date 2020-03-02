@@ -118,13 +118,13 @@ namespace eosiosystem {
       time_point           last_pervote_bucket_fill;
       int64_t              pervote_bucket = 0;
       int64_t              perblock_bucket = 0;
-      uint32_t             total_unpaid_blocks = 0; /// all blocks which have been produced but not paid
-      int64_t              total_activated_stake = 0;
+      uint32_t             total_unpaid_blocks = 0;            /// all blocks which have been produced but not paid
+      int64_t              total_activated_stake = 0;          /// last active stake value after reaching min_activated_stake
       int64_t              active_stake = 0;
-      time_point           thresh_activated_stake_time;
+      time_point           thresh_activated_stake_time;        /// timepoint when min_activated_stake is reached
       uint16_t             target_producer_schedule_size = 21;
       uint16_t             last_producer_schedule_size = 0;
-      double               total_producer_vote_weight = 0; /// the sum of all producer votes
+      double               total_producer_vote_weight = 0;     /// the sum of all producer votes
       block_timestamp      last_name_close;
       block_timestamp      last_target_schedule_size_update;
       uint32_t             schedule_update_interval = 60 * 60 * 24;
