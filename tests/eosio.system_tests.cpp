@@ -2936,10 +2936,8 @@ BOOST_FIXTURE_TEST_CASE( buyname, eosio_system_tester ) try {
    produce_block();
    BOOST_TEST_MESSAGE("After 1 day + 1 block auction should be closed for nofail:");
    debug_name_bids({ N(eosio), N(sam), N(dan), N(nofail) });
-
-#ifndef NDEBUG
    print_debug_logs();
-#endif
+
    BOOST_REQUIRE_LT(get_name_bid(N(nofail))["high_bid"].as<int64_t>(), 0);
 
    BOOST_REQUIRE_EXCEPTION( create_account_with_resources(N(nofail), N(dan)), // dan shoudn't be able to do this, sam won
@@ -3783,9 +3781,7 @@ BOOST_FIXTURE_TEST_CASE( stake_total_vs_active, eosio_system_tester ) try {
    // active_stake == total_activated_stake
    BOOST_TEST_REQUIRE( vote_a1_p1_1.get_amount() == get_global_state()["active_stake"].as<int64_t>() );
 
-#ifndef NDEBUG
    print_debug_logs();
-#endif
 
    // total_activated_stake should not change after setting thresh_activated_stake_time
    BOOST_TEST_REQUIRE( init_vote.get_amount() == get_global_state()["total_activated_stake"].as<int64_t>() );
@@ -3860,9 +3856,7 @@ BOOST_FIXTURE_TEST_CASE( total_activated_stake_fix, eosio_system_tester ) try {
    const auto producer = N(producer);
    const auto voter_staked = STRSYM("100.0000");
 
-#ifndef NDEBUG
    print_debug_logs();
-#endif
 
    create_account_with_resources(voter, config::system_account_name, STRSYM("1.0000"), false,
                                  STRSYM("1.0000"), STRSYM("1.0000"), STRSYM("0.0000"), true);

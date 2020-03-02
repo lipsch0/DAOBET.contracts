@@ -20,7 +20,11 @@
 
 # define ADD_DEBUG_LOG_MSG(msg) do { \
    _dlogs.data.push_back(std::string(__func__) + ":" + std::to_string(__LINE__) + ": " + (msg)); \
-} while (0);
+} while (0)
+
+#else
+
+# define ADD_DEBUG_LOG_MSG(msg) do {} while (0)
 
 #endif // NDEBUG
 

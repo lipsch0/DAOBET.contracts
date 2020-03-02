@@ -552,15 +552,17 @@ public:
       vector<char> data = get_row_by_account( config::system_account_name, config::system_account_name, N(dlogs), N(dlogs) );
       return data.empty() ? fc::variant() : abi_ser.binary_to_variant( "dlogs", data, abi_serializer_max_time );
    }
+#endif // NDEBUG
 
    void print_debug_logs() const {
+#ifndef NDEBUG
       std::string dlog;
       for (const auto& log : get_dlogs()["data"].as<std::vector<std::string>>()) {
          dlog += "  " + log + "\n";
       }
       BOOST_TEST_MESSAGE("debug log:\n" + dlog);
-   }
 #endif // NDEBUG
+   }
 
    abi_serializer initialize_multisig() {
       abi_serializer msig_abi_ser;
