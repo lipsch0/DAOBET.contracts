@@ -49,7 +49,7 @@ eval set -- "$OPTS"
 while true; do
   case "${1:-}" in
   (--build-type)   build_type="$2" ; shift 2 ; readonly build_type ;;
-  #(--local-clang)  local_clang=y   ; shift   ; readonly local_clang ;;
+  #(--local-clang)  local_clang=y   ; shift   ; readonly local_clang ;; # not needed on >=ubuntu-18.04
   (--build-tests)  build_tests=y   ; shift   ; readonly build_tests ;;
   (--verbose)      verbose=y       ; shift   ; readonly verbose ;;
   (-h|--help)      usage ; exit 0 ;;
@@ -58,6 +58,8 @@ while true; do
   esac
 done
 unset OPTS
+
+readonly build_type verbose build_tests
 
 ###
 
