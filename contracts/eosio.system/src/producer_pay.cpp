@@ -17,8 +17,6 @@ namespace eosiosystem {
       name producer;
       _ds >> timestamp >> producer;
 
-      ADD_DEBUG_LOG_MSG("ts = " + std::to_string(timestamp.slot));
-
       // _gstate2.last_block_num is not used anywhere in the system contract code anymore.
       // Although this field is deprecated, we will continue updating it for now until the last_block_num field
       // is eventually completely removed, at which point this line can be removed.
@@ -43,8 +41,6 @@ namespace eosiosystem {
                p.unpaid_blocks++;
          });
       }
-
-      ADD_DEBUG_LOG_MSG("before updating prods");
 
       /// only update block producers once every minute, block_timestamp is in half seconds
       if( timestamp.slot - _gstate.last_producer_schedule_update.slot > 120 ) {

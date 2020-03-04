@@ -108,6 +108,7 @@ namespace eosiosystem {
       top_producers.reserve(target_schedule_size);
 
       for ( auto it = idx.cbegin(); it != idx.cend() && top_producers.size() < target_schedule_size && 0 < it->total_votes && it->active(); ++it ) {
+         ADD_DEBUG_LOG_MSG("adding producer: " + it->owner.to_string());
          del_bandwidth_table del_tbl( get_self(), it->owner.value );
          auto itr = del_tbl.find( it->owner.value );
          asset total_staked(0, core_symbol());

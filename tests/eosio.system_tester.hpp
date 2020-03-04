@@ -33,10 +33,10 @@ using mvo = fc::mutable_variant_object;
 #define STRSYM(str) core_sym::from_string(str)
 
 /// Number of initially issued tokens.
-#define TOKENS_ISSUED 1672708210L
+#define TOKENS_ISSUED 167270821L
 
 #define TOKEN_PRECISION 4
-#define TOKEN_FRACTIONAL_PART_MULTIPLIER 1000 // 10^{TOKEN_PRECISION-1}
+#define TOKEN_FRACTIONAL_PART_MULTIPLIER 10000 // 10^TOKEN_PRECISION
 
 
 namespace eosio_system {
@@ -148,7 +148,7 @@ public:
 
       debug_balances({ N(eosio), N(eosio.ramfee), N(eosio.stake), N(eosio.ram) });
 
-      const std::string eosio_total_balances = std::to_string(TOKENS_ISSUED / 10) + "." + std::string(TOKEN_PRECISION, '0');
+      const std::string eosio_total_balances = std::to_string(TOKENS_ISSUED) + "." + std::string(TOKEN_PRECISION, '0');
       BOOST_REQUIRE_EQUAL( STRSYM(eosio_total_balances),
          get_balance("eosio") + get_balance("eosio.ramfee") + get_balance("eosio.stake") + get_balance("eosio.ram") );
    }

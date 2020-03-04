@@ -17,15 +17,9 @@
 
 // run cicd/build.sh with `--build-type Debug` option to enable enhanced logging
 #ifndef NDEBUG
-
-# define ADD_DEBUG_LOG_MSG(msg) do { \
-   _dlogs.data.push_back(std::string(__func__) + ":" + std::to_string(__LINE__) + ": " + (msg)); \
-} while (0)
-
+# define ADD_DEBUG_LOG_MSG(msg) do { _dlogs.data.push_back(std::string(__func__) + ":" + std::to_string(__LINE__) + ": " + (msg)); } while (0)
 #else
-
 # define ADD_DEBUG_LOG_MSG(msg) do {} while (0)
-
 #endif // NDEBUG
 
 
@@ -131,16 +125,16 @@ namespace eosiosystem {
       time_point           last_pervote_bucket_fill;
       int64_t              pervote_bucket = 0;
       int64_t              perblock_bucket = 0;
-      uint32_t             total_unpaid_blocks = 0;            /// all blocks which have been produced but not paid
-      int64_t              total_activated_stake = 0;          /// last active stake value after reaching min_activated_stake
-      int64_t              active_stake = 0;
-      time_point           thresh_activated_stake_time;        /// timepoint when min_activated_stake is reached
+      uint32_t             total_unpaid_blocks = 0;                 /// all blocks which have been produced but not paid
+      int64_t              total_activated_stake = 0;               /// last active_stake value after reaching min_activated_stake
+      int64_t              active_stake = 0;                        /// current total activated stake
+      time_point           thresh_activated_stake_time;             /// timepoint when min_activated_stake is reached
       uint16_t             target_producer_schedule_size = 21;
       uint16_t             last_producer_schedule_size = 0;
-      double               total_producer_vote_weight = 0;     /// the sum of all producer votes
+      double               total_producer_vote_weight = 0;          /// the sum of all producer votes
       block_timestamp      last_name_close;
-      block_timestamp      last_target_schedule_size_update;
-      uint32_t             schedule_update_interval = 60 * 60 * 24;
+      block_timestamp      last_target_schedule_size_update;        /// ts of last producers schedule update
+      uint32_t             schedule_update_interval = 60 * 60 * 24; /// min interval between changes in producer schedule
       uint16_t             schedule_size_step = 3;
 
       // explicit serialization macro is not necessary, used here only to improve compilation time
