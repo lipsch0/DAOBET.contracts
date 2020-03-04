@@ -1541,7 +1541,7 @@ BOOST_FIXTURE_TEST_CASE(producer_pay, eosio_system_tester, * boost::unit_test::t
       const int64_t initial_dao = get_balance(N(eosio.saving)).get_amount(); // DAOBET
       const auto    initial_global_state = get_global_state();
 
-      const double emission_rate = get_target_emission_per_year(1.0 * initial_global_state["total_activated_stake"].as<int64_t>() / initial_supply.get_amount());
+      const double emission_rate = get_target_emission_per_year(1.0 * initial_global_state["active_stake"].as<int64_t>() / initial_supply.get_amount());
 
       for (uint32_t i = 0; i < 7 * 52; ++i) {
          produce_block(fc::seconds(8 * 3600));
@@ -1719,7 +1719,7 @@ BOOST_FIXTURE_TEST_CASE(multiple_producer_pay, eosio_system_tester, * boost::uni
 
       ///@{
       ///DAOBET
-      const double emission_rate = get_target_emission_per_year(1.0 * initial_global_state["total_activated_stake"].as<int64_t>() / initial_supply.get_amount());
+      const double emission_rate = get_target_emission_per_year(1.0 * initial_global_state["active_stake"].as<int64_t>() / initial_supply.get_amount());
       const double continuous_rate = get_continuous_rate(emission_rate);
       ///@}
 
@@ -1756,6 +1756,8 @@ BOOST_FIXTURE_TEST_CASE(multiple_producer_pay, eosio_system_tester, * boost::uni
 
       const double expected_supply_growth = initial_supply.get_amount() * double(usecs_between_fills) * continuous_rate / usecs_per_year; // DAOBET
       BOOST_REQUIRE_EQUAL( int64_t(expected_supply_growth), supply.get_amount() - initial_supply.get_amount() );
+
+      //TODO: also check changing emission rate after unstaking (when active_stake is decreased)
 
       produce_blocks(5);
 
