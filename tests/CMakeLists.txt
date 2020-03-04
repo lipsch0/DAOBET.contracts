@@ -29,8 +29,7 @@ find_package(eosio)
 #~     "Please use eosio version ${EOSIO_VERSION_SOFT_MAX}.")
 #~ endif(VERSION_OUTPUT STREQUAL "MATCH")
 
-#~include(CTest) # eliminates DartConfiguration.tcl errors at test runtime TODO: remove
-enable_testing()
+include(CTest)
 
 configure_file(${CMAKE_SOURCE_DIR}/contracts.hpp.in ${CMAKE_BINARY_DIR}/contracts.hpp)
 

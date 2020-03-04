@@ -62,12 +62,13 @@ else() # INVALID OR MISMATCH
     "requirements: ${version_match_error_msg}. Please use eosio.cdt version ${eosio_cdt_version_soft_max}.")
 endif()
 
+#TODO: Contracts' tests depend on different libraries for different build types:
+# libfc.a (for release) or libfc_debug.a (for debug) (the same for secp256k1 library).
+# (see EosioTester.cmake)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(TEST_BUILD_TYPE "Debug")
-  set(CMAKE_BUILD_TYPE "Release")
-else()
-  set(TEST_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 endif()
+set(TEST_BUILD_TYPE ${CMAKE_BUILD_TYPE})
 
 ExternalProject_Add(
   contracts_project
